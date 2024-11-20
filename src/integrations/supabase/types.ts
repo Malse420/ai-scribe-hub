@@ -272,6 +272,79 @@ export type Database = {
           },
         ]
       }
+      workflow_runs: {
+        Row: {
+          end_time: string | null
+          id: string
+          result: Json | null
+          start_time: string | null
+          status: string
+          workflow_id: string
+        }
+        Insert: {
+          end_time?: string | null
+          id?: string
+          result?: Json | null
+          start_time?: string | null
+          status?: string
+          workflow_id: string
+        }
+        Update: {
+          end_time?: string | null
+          id?: string
+          result?: Json | null
+          start_time?: string | null
+          status?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_runs_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_steps: {
+        Row: {
+          created_at: string | null
+          id: string
+          step_config: Json
+          step_order: number
+          step_type: string
+          updated_at: string | null
+          workflow_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          step_config?: Json
+          step_order: number
+          step_type: string
+          updated_at?: string | null
+          workflow_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          step_config?: Json
+          step_order?: number
+          step_type?: string
+          updated_at?: string | null
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_steps_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workflows: {
         Row: {
           created_at: string | null
