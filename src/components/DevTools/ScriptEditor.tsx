@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Save, Play, Trash, UserPlus, Users } from "lucide-react";
 import { UserScript, saveScript, deleteScript } from "@/utils/scriptGeneration";
 import { useScriptCollaboration } from "@/hooks/useScriptCollaboration";
+import Editor from "@monaco-editor/react";
 import {
   Dialog,
   DialogContent,
@@ -43,12 +44,20 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
     };
     saveScript(updatedScript);
     onSave?.(updatedScript);
+    toast.success("Script saved successfully");
   };
 
   const handleDelete = () => {
     if (script.id) {
       deleteScript(script.id);
       onDelete?.(script.id);
+      toast.success("Script deleted successfully");
+    }
+  };
+
+  const handleEditorChange = (value: string | undefined) => {
+    if (value !== undefined) {
+      setScript((prev) => ({ ...prev, code: value }));
     }
   };
 
@@ -57,12 +66,26 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
       toast.error("Please enter an email address");
       return;
     }
-    await addCollaborator.mutateAsync(newCollaboratorEmail);
-    setNewCollaboratorEmail("");
+    try {
+      await addCollaborator.mutateAsync(newCollaboratorEmail);
+      setNewCollaboratorEmail("");
+      toast.success("Collaborator added successfully");
+    } catch (error) {
+      toast.error("Failed to add collaborator");
+    }
+  };
+
+  const editorOptions = {
+    minimap: { enabled: true },
+    fontSize: 14,
+    lineNumbers: "on",
+    roundedSelection: true,
+    scrollBeyondLastLine: false,
+    automaticLayout: true,
   };
 
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle>Script Editor</CardTitle>
@@ -123,11 +146,16 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
           placeholder="Script name"
           className="mb-2"
         />
-        <textarea
-          value={script.code}
-          onChange={(e) => setScript({ ...script, code: e.target.value })}
-          className="w-full h-64 p-2 font-mono text-sm border rounded-lg"
-        />
+        <div className="h-[500px] border rounded-lg overflow-hidden">
+          <Editor
+            height="100%"
+            defaultLanguage="javascript"
+            theme="vs-dark"
+            value={script.code}
+            onChange={handleEditorChange}
+            options={editorOptions}
+          />
+        </div>
         <div className="flex justify-end space-x-2">
           <Button variant="outline" onClick={handleDelete}>
             <Trash className="w-4 h-4 mr-2" />
