@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Code, Database, Terminal, FileCode, Download } from "lucide-react";
+import { Code, Database, Terminal, FileCode, Download, Crosshair } from "lucide-react";
 import ScriptEditor from "./ScriptEditor";
+import { VisualSelector } from "./VisualSelector";
 import { analyzeDOMStructure, generateSelector, findElementByDescription } from "@/utils/pageAnalysis";
 import { scrapeData, exportData, downloadData, ScrapingConfig } from "@/utils/webScraping";
 import { toast } from "sonner";
@@ -73,6 +74,17 @@ const DevPanel = () => {
           <span>Scripts</span>
         </button>
         <button
+          onClick={() => setActiveTab("selector")}
+          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
+            activeTab === "selector"
+              ? "border-primary-500 text-primary-500"
+              : "border-transparent"
+          }`}
+        >
+          <Crosshair size={20} />
+          <span>Selector</span>
+        </button>
+        <button
           onClick={() => setActiveTab("scraping")}
           className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
             activeTab === "scraping"
@@ -110,6 +122,12 @@ const DevPanel = () => {
         {activeTab === "scripts" && (
           <div className="space-y-4">
             <ScriptEditor />
+          </div>
+        )}
+        {activeTab === "selector" && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">Visual Selector Tool</h2>
+            <VisualSelector />
           </div>
         )}
         {activeTab === "scraping" && (
