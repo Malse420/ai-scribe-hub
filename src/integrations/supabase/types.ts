@@ -54,7 +54,7 @@ export type Database = {
           filename: string
           id?: string
           last_accessed_at?: string | null
-          status: string
+          status?: string
           updated_at?: string | null
           user_id: string
         }
@@ -98,7 +98,7 @@ export type Database = {
           created_at: string | null
           id: string
           resource_id: string
-          resource_metadata: Json | null
+          resource_metadata: Json
           resource_type: string
           updated_at: string | null
           user_id: string
@@ -107,7 +107,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           resource_id: string
-          resource_metadata?: Json | null
+          resource_metadata?: Json
           resource_type: string
           updated_at?: string | null
           user_id: string
@@ -116,7 +116,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           resource_id?: string
-          resource_metadata?: Json | null
+          resource_metadata?: Json
           resource_type?: string
           updated_at?: string | null
           user_id?: string
@@ -209,7 +209,7 @@ export type Database = {
           id?: string
           last_accessed_at?: string | null
           name: string
-          status: string
+          status?: string
           updated_at?: string | null
           user_id: string
         }
