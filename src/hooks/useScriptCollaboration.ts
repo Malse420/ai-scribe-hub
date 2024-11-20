@@ -53,20 +53,20 @@ export const useScriptCollaboration = (scriptId: string) => {
 
       const currentCollaborators = (scriptData?.collaborators as string[]) || [];
       
-      // Get user by email using auth API
+      // Get user by email using auth API with correct pagination parameters
       const { data: userData, error: userError } = await supabase.auth.admin.listUsers({
         page: 1,
-        perPage: 1,
-        filters: {
-          email: email
-        }
+        perPage: 1
       });
 
-      if (userError || !userData?.users?.[0]) {
+      // Find user with matching email
+      const user = userData?.users?.find(u => u.email === email);
+
+      if (userError || !user) {
         throw new Error('User not found');
       }
 
-      const userId = userData.users[0].id;
+      const userId = user.id;
 
       const { error } = await supabase
         .from('userscripts')
