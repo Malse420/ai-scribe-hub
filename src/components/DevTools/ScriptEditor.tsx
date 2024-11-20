@@ -28,11 +28,11 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
   const [script, setScript] = useState<UserScript>(
     initialScript || {
       id: Math.random().toString(36).substr(2, 9),
-      name: "New Script",
-      description: "",
-      code: "// Write your script here",
-      created: new Date().toISOString(),
-      modified: new Date().toISOString(),
+      title: "New Script",
+      content: "// Write your script here",
+      version: 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }
   );
 
@@ -43,7 +43,7 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
   const handleSave = () => {
     const updatedScript = {
       ...script,
-      modified: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
     saveScript(updatedScript);
     onSave?.(updatedScript);
@@ -60,7 +60,7 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
 
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
-      setScript((prev) => ({ ...prev, code: value }));
+      setScript((prev) => ({ ...prev, content: value }));
     }
   };
 
@@ -161,8 +161,8 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input
-            value={script.name}
-            onChange={(e) => setScript({ ...script, name: e.target.value })}
+            value={script.title}
+            onChange={(e) => setScript({ ...script, title: e.target.value })}
             placeholder="Script name"
             className="mb-2"
           />
@@ -171,7 +171,7 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
               height="100%"
               defaultLanguage="javascript"
               theme="vs-dark"
-              value={script.code}
+              value={script.content}
               onChange={handleEditorChange}
               options={editorOptions}
             />

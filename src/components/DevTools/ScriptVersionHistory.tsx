@@ -42,7 +42,7 @@ const ScriptVersionHistory = ({ scriptId, onVersionSelect }: ScriptVersionHistor
         .update({
           content: version.content,
           version: version.version,
-          modified: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         })
         .eq('id', scriptId);
 
@@ -84,7 +84,7 @@ const ScriptVersionHistory = ({ scriptId, onVersionSelect }: ScriptVersionHistor
                   <div>
                     <h4 className="font-medium">Version {version.version}</h4>
                     <p className="text-sm text-neutral-500">
-                      {formatDistanceToNow(new Date(version.modified), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(version.updated_at || ''), { addSuffix: true })}
                     </p>
                   </div>
                   <div className="flex gap-2">

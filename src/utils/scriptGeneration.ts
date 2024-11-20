@@ -8,25 +8,29 @@ export interface ScriptTemplate {
 
 export interface UserScript {
   id: string;
-  name: string;
-  description: string;
-  code: string;
-  created: string;
-  modified: string;
+  title: string;
+  content: string;
+  version: number;
+  created_at?: string;
+  updated_at?: string;
+  last_accessed_at?: string;
+  parent_version_id?: string;
+  is_shared?: boolean;
+  shared_with?: any[];
+  last_editor?: string;
+  collaborators?: any[];
 }
 
 const generateScriptId = () => Math.random().toString(36).substr(2, 9);
 
 export const generateScript = (task: string, context: any): UserScript => {
-  // This is a placeholder for the actual NLP-based script generation
-  // In a real implementation, this would use AI to generate appropriate scripts
   const script: UserScript = {
     id: generateScriptId(),
-    name: `Script for ${task}`,
-    description: `Automatically generated script for: ${task}`,
-    code: `// Generated script for: ${task}\n// Context: ${JSON.stringify(context)}\n\n// Your code here`,
-    created: new Date().toISOString(),
-    modified: new Date().toISOString(),
+    title: `Script for ${task}`,
+    content: `// Generated script for: ${task}\n// Context: ${JSON.stringify(context)}\n\n// Your code here`,
+    version: 1,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   };
 
   return script;
