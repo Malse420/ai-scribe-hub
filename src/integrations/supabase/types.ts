@@ -16,6 +16,8 @@ export type Database = {
           event_data: Json | null
           event_type: string
           id: string
+          session_duration: number | null
+          session_events: Json | null
           session_id: string | null
           user_id: string
         }
@@ -25,6 +27,8 @@ export type Database = {
           event_data?: Json | null
           event_type: string
           id?: string
+          session_duration?: number | null
+          session_events?: Json | null
           session_id?: string | null
           user_id: string
         }
@@ -34,6 +38,8 @@ export type Database = {
           event_data?: Json | null
           event_type?: string
           id?: string
+          session_duration?: number | null
+          session_events?: Json | null
           session_id?: string | null
           user_id?: string
         }
@@ -76,6 +82,8 @@ export type Database = {
           message: string
           severity: string
           user_id: string
+          userscript_id: string | null
+          workflow_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -83,6 +91,8 @@ export type Database = {
           message: string
           severity?: string
           user_id: string
+          userscript_id?: string | null
+          workflow_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -90,8 +100,25 @@ export type Database = {
           message?: string
           severity?: string
           user_id?: string
+          userscript_id?: string | null
+          workflow_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "debug_logs_userscript_id_fkey"
+            columns: ["userscript_id"]
+            isOneToOne: false
+            referencedRelation: "userscripts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "debug_logs_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shared_resources: {
         Row: {
@@ -155,34 +182,49 @@ export type Database = {
       }
       userscripts: {
         Row: {
+          collaborators: Json | null
           content: string
           created_at: string | null
           id: string
+          is_shared: boolean | null
           last_accessed_at: string | null
+          last_editor: string | null
           parent_version_id: string | null
+          shared_with: Json | null
           title: string
           updated_at: string | null
           user_id: string
+          version: number | null
         }
         Insert: {
+          collaborators?: Json | null
           content: string
           created_at?: string | null
           id?: string
+          is_shared?: boolean | null
           last_accessed_at?: string | null
+          last_editor?: string | null
           parent_version_id?: string | null
+          shared_with?: Json | null
           title: string
           updated_at?: string | null
           user_id: string
+          version?: number | null
         }
         Update: {
+          collaborators?: Json | null
           content?: string
           created_at?: string | null
           id?: string
+          is_shared?: boolean | null
           last_accessed_at?: string | null
+          last_editor?: string | null
           parent_version_id?: string | null
+          shared_with?: Json | null
           title?: string
           updated_at?: string | null
           user_id?: string
+          version?: number | null
         }
         Relationships: [
           {
