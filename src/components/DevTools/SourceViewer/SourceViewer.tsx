@@ -17,7 +17,7 @@ export const SourceViewer = ({ html, css, javascript }: SourceViewerProps) => {
   const editorOptions = {
     minimap: { enabled: false },
     fontSize: 14,
-    lineNumbers: "on",
+    lineNumbers: "on" as const, // Fix the type by using a const assertion
     readOnly: true,
     automaticLayout: true,
   };

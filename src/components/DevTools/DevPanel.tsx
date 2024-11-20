@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { Code, Database, Terminal, FileCode, Download, Crosshair } from "lucide-react";
 import ScriptEditor from "./ScriptEditor";
 import { VisualSelector } from "./VisualSelector";
-import { analyzeDOMStructure, generateSelector, findElementByDescription } from "@/utils/pageAnalysis";
-import { scrapeData, exportData, downloadData, ScrapingConfig } from "@/utils/webScraping";
+import { analyzeDOMStructure, generateSelector } from "@/utils/pageAnalysis";
+import { scrapeData, exportData, downloadData } from "@/utils/webScraping";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { extractPageSource } from "@/utils/sourceExtractor";
-import SourceViewer from "./SourceViewer";
+import { SourceViewer } from "./SourceViewer/SourceViewer";
 
 const DevPanel = () => {
   const [activeTab, setActiveTab] = useState("code");
