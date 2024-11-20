@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,7 +97,7 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
                     >
                       <div className="flex items-center gap-2">
                         <span>{collaborator.email}</span>
-                        <Badge variant={collaborator.online ? "success" : "secondary"}>
+                        <Badge variant={collaborator.online ? "secondary" : "outline"}>
                           {collaborator.online ? "Online" : "Offline"}
                         </Badge>
                       </div>

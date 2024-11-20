@@ -43,11 +43,16 @@ export const useScriptCollaboration = (scriptId: string) => {
 
   const addCollaborator = useMutation({
     mutationFn: async (email: string) => {
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email)
+      const { data: scriptData, error: scriptError } = await supabase
+        .from('userscripts')
+        .select('collaborators')
+        .eq('id', scriptId)
         .single();
+
+      if (scriptError) throw scriptError;
+
+      const collaborators = scriptData.collaborators || [];
+      const { data: userData, error: userError } = await supabase.auth.admin.getUserByEmail(email);
 
       if (userError || !userData) {
         throw new Error('User not found');
@@ -56,12 +61,12 @@ export const useScriptCollaboration = (scriptId: string) => {
       const { error } = await supabase
         .from('userscripts')
         .update({
-          collaborators: supabase.sql`array_append(collaborators, ${userData.id})`
+          collaborators: [...collaborators, userData.user.id]
         })
         .eq('id', scriptId);
 
       if (error) throw error;
-      return userData.id;
+      return userData.user.id;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['script', scriptId] });
@@ -74,10 +79,21 @@ export const useScriptCollaboration = (scriptId: string) => {
 
   const removeCollaborator = useMutation({
     mutationFn: async (userId: string) => {
+      const { data: scriptData, error: scriptError } = await supabase
+        .from('userscripts')
+        .select('collaborators')
+        .eq('id', scriptId)
+        .single();
+
+      if (scriptError) throw scriptError;
+
+      const collaborators = scriptData.collaborators || [];
+      const updatedCollaborators = collaborators.filter((id: string) => id !== userId);
+
       const { error } = await supabase
         .from('userscripts')
         .update({
-          collaborators: supabase.sql`array_remove(collaborators, ${userId})`
+          collaborators: updatedCollaborators
         })
         .eq('id', scriptId);
 
