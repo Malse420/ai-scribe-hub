@@ -120,6 +120,42 @@ export type Database = {
           },
         ]
       }
+      element_selectors: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          element_type: string
+          id: string
+          last_used_at: string | null
+          metadata: Json | null
+          selector: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          element_type: string
+          id?: string
+          last_used_at?: string | null
+          metadata?: Json | null
+          selector: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          element_type?: string
+          id?: string
+          last_used_at?: string | null
+          metadata?: Json | null
+          selector?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       shared_resources: {
         Row: {
           created_at: string | null
