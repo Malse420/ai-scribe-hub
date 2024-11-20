@@ -2,13 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-
-interface Collaborator {
-  id: string;
-  email?: string;
-  online?: boolean;
-  lastActive?: string;
-}
+import { Collaborator } from '@/types/script';
 
 export const useScriptCollaboration = (scriptId: string) => {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);

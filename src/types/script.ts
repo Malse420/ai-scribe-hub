@@ -1,7 +1,7 @@
 export interface Collaborator {
   id: string;
-  email: string;
-  online: boolean;
+  email?: string;  // Made optional to match the hook's type
+  online?: boolean;
 }
 
 export interface UserScript {
