@@ -1,6 +1,6 @@
 export interface Collaborator {
   id: string;
-  email: string;  // Made required again to match the component expectations
+  email: string;
   online: boolean;
   lastActive?: string;
 }
@@ -14,7 +14,14 @@ export interface UserScript {
   updated_at: string;
   parent_version_id?: string;
   is_shared?: boolean;
-  shared_with?: any[];
+  shared_with?: string[];
   last_editor?: string;
   collaborators?: string[];
+  active_collaborators?: string[];
+  version_history?: {
+    version: number;
+    content: string;
+    updated_at: string;
+    editor: string;
+  }[];
 }

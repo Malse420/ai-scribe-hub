@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { toast } from 'sonner';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Collaborator } from '@/types/script';
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Collaborator } from "@/types/script";
 
 export const useScriptCollaboration = (scriptId: string) => {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
@@ -11,18 +11,20 @@ export const useScriptCollaboration = (scriptId: string) => {
   useEffect(() => {
     const channel = supabase
       .channel(`script:${scriptId}`)
-      .on('presence', { event: 'sync' }, () => {
+      .on("presence", { event: "sync" }, () => {
         const newState = channel.presenceState();
-        const activeCollaborators = Object.values(newState).flat().map((presence: any) => ({
-          id: presence.user_id,
-          email: presence.email || 'Unknown',
-          online: true,
-          lastActive: new Date().toISOString(),
-        }));
+        const activeCollaborators = Object.values(newState)
+          .flat()
+          .map((presence: any) => ({
+            id: presence.user_id,
+            email: presence.email || "Unknown",
+            online: true,
+            lastActive: new Date().toISOString(),
+          }));
         setCollaborators(activeCollaborators);
       })
       .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
+        if (status === "SUBSCRIBED") {
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
             await channel.track({
@@ -40,79 +42,82 @@ export const useScriptCollaboration = (scriptId: string) => {
 
   const addCollaborator = useMutation({
     mutationFn: async (email: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       const { data: scriptData, error: scriptError } = await supabase
-        .from('userscripts')
-        .select('collaborators')
-        .eq('id', scriptId)
+        .from("userscripts")
+        .select("collaborators, active_collaborators")
+        .eq("id", scriptId)
         .single();
 
       if (scriptError) throw scriptError;
 
-      const currentCollaborators = scriptData?.collaborators || [];
-      
-      const { data: { users }, error: userError } = await supabase.auth.admin.listUsers({
-        page: 1,
-        perPage: 100
-      });
+      const { data: userData, error: userError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", email)
+        .single();
 
-      if (userError || !users) {
-        throw new Error('Failed to fetch users');
-      }
+      if (userError) throw new Error("User not found");
 
-      const user = users.find(u => u.email === email);
-
-      if (!user) {
-        throw new Error('User not found');
-      }
+      const collaborators = scriptData?.collaborators || [];
+      const activeCollaborators = scriptData?.active_collaborators || [];
 
       const { error } = await supabase
-        .from('userscripts')
+        .from("userscripts")
         .update({
-          collaborators: [...currentCollaborators, user.id]
+          collaborators: [...collaborators, userData.id],
+          active_collaborators: [...activeCollaborators, userData.id],
         })
-        .eq('id', scriptId);
+        .eq("id", scriptId);
 
       if (error) throw error;
-      return user.id;
+      return userData.id;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['script', scriptId] });
-      toast.success('Collaborator added successfully');
+      queryClient.invalidateQueries({ queryKey: ["script", scriptId] });
+      toast.success("Collaborator added successfully");
     },
     onError: (error) => {
-      toast.error('Failed to add collaborator: ' + error.message);
+      toast.error("Failed to add collaborator: " + error.message);
     },
   });
 
   const removeCollaborator = useMutation({
     mutationFn: async (userId: string) => {
       const { data: scriptData, error: scriptError } = await supabase
-        .from('userscripts')
-        .select('collaborators')
-        .eq('id', scriptId)
+        .from("userscripts")
+        .select("collaborators, active_collaborators")
+        .eq("id", scriptId)
         .single();
 
       if (scriptError) throw scriptError;
 
-      const currentCollaborators = scriptData?.collaborators || [];
-      const updatedCollaborators = currentCollaborators.filter(id => id !== userId);
+      const collaborators = (scriptData?.collaborators || []).filter(
+        (id) => id !== userId
+      );
+      const activeCollaborators = (scriptData?.active_collaborators || []).filter(
+        (id) => id !== userId
+      );
 
       const { error } = await supabase
-        .from('userscripts')
+        .from("userscripts")
         .update({
-          collaborators: updatedCollaborators
+          collaborators,
+          active_collaborators: activeCollaborators,
         })
-        .eq('id', scriptId);
+        .eq("id", scriptId);
 
       if (error) throw error;
       return userId;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['script', scriptId] });
-      toast.success('Collaborator removed successfully');
+      queryClient.invalidateQueries({ queryKey: ["script", scriptId] });
+      toast.success("Collaborator removed successfully");
     },
     onError: (error) => {
-      toast.error('Failed to remove collaborator: ' + error.message);
+      toast.error("Failed to remove collaborator: " + error.message);
     },
   });
 
