@@ -1,25 +1,6 @@
 import { toast } from "sonner";
-
-export interface ScriptTemplate {
-  name: string;
-  description: string;
-  code: string;
-}
-
-export interface UserScript {
-  id: string;
-  title: string;
-  content: string;
-  version: number;
-  created_at?: string;
-  updated_at?: string;
-  last_accessed_at?: string;
-  parent_version_id?: string;
-  is_shared?: boolean;
-  shared_with?: any[];
-  last_editor?: string;
-  collaborators?: any[];
-}
+import { UserScript } from "@/types/script";
+import { supabase } from "@/lib/supabase";
 
 const generateScriptId = () => Math.random().toString(36).substr(2, 9);
 
@@ -36,11 +17,13 @@ export const generateScript = (task: string, context: any): UserScript => {
   return script;
 };
 
-export const saveScript = (script: UserScript): void => {
+export const saveScript = async (script: UserScript): Promise<void> => {
   try {
-    const scripts = JSON.parse(localStorage.getItem('userScripts') || '[]');
-    scripts.push(script);
-    localStorage.setItem('userScripts', JSON.stringify(scripts));
+    const { error } = await supabase
+      .from('userscripts')
+      .upsert(script);
+    
+    if (error) throw error;
     toast.success("Script saved successfully");
   } catch (error) {
     toast.error("Failed to save script");
@@ -48,14 +31,14 @@ export const saveScript = (script: UserScript): void => {
   }
 };
 
-export const getScripts = (): UserScript[] => {
-  return JSON.parse(localStorage.getItem('userScripts') || '[]');
-};
-
-export const deleteScript = (id: string): void => {
+export const deleteScript = async (id: string): Promise<void> => {
   try {
-    const scripts = getScripts().filter(s => s.id !== id);
-    localStorage.setItem('userScripts', JSON.stringify(scripts));
+    const { error } = await supabase
+      .from('userscripts')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
     toast.success("Script deleted successfully");
   } catch (error) {
     toast.error("Failed to delete script");
