@@ -1,8 +1,24 @@
 import { useState } from "react";
-import { Code, Database, Terminal } from "lucide-react";
+import { Code, Database, Terminal, FileCode } from "lucide-react";
+import ScriptEditor from "./ScriptEditor";
+import { analyzeDOMStructure, generateSelector } from "@/utils/pageAnalysis";
+import { scrapeData, exportData } from "@/utils/webScraping";
+import { toast } from "sonner";
 
 const DevPanel = () => {
   const [activeTab, setActiveTab] = useState("code");
+  const [domAnalysis, setDomAnalysis] = useState<Record<string, number>>({});
+
+  const handleAnalyzeDOM = () => {
+    const structure = analyzeDOMStructure();
+    setDomAnalysis(structure);
+    toast.success("DOM analysis complete");
+  };
+
+  const handleGenerateSelector = (description: string) => {
+    const selectors = generateSelector(description);
+    toast.success(`Generated ${selectors.length} potential selectors`);
+  };
 
   return (
     <div className="h-[calc(100vh-4rem)]">
@@ -17,6 +33,17 @@ const DevPanel = () => {
         >
           <Code size={20} />
           <span>Code</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("scripts")}
+          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
+            activeTab === "scripts"
+              ? "border-primary-500 text-primary-500"
+              : "border-transparent"
+          }`}
+        >
+          <FileCode size={20} />
+          <span>Scripts</span>
         </button>
         <button
           onClick={() => setActiveTab("network")}
@@ -45,12 +72,20 @@ const DevPanel = () => {
         {activeTab === "code" && (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">Source Code</h2>
+            <button
+              onClick={handleAnalyzeDOM}
+              className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+            >
+              Analyze DOM Structure
+            </button>
             <pre className="p-4 bg-neutral-100 rounded-lg overflow-x-auto">
-              <code>{`// Example source code
-function hello() {
-  console.log("Hello, Developer!");
-}`}</code>
+              <code>{JSON.stringify(domAnalysis, null, 2)}</code>
             </pre>
+          </div>
+        )}
+        {activeTab === "scripts" && (
+          <div className="space-y-4">
+            <ScriptEditor />
           </div>
         )}
         {activeTab === "network" && (
