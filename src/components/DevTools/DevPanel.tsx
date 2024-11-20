@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Code, Database, Terminal, FileCode, Download, Crosshair } from "lucide-react";
 import ScriptEditor from "./ScriptEditor";
 import { VisualSelector } from "./VisualSelector";
@@ -7,6 +7,8 @@ import { scrapeData, exportData, downloadData, ScrapingConfig } from "@/utils/we
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { extractPageSource } from "@/utils/sourceExtractor";
+import SourceViewer from "./SourceViewer";
 
 const DevPanel = () => {
   const [activeTab, setActiveTab] = useState("code");
@@ -15,6 +17,11 @@ const DevPanel = () => {
   const [scrapingConfig, setScrapingConfig] = useState<ScrapingConfig>({
     selector: "",
     attributes: [],
+  });
+  const [pageSource, setPageSource] = useState({
+    html: "",
+    css: "",
+    javascript: ""
   });
 
   const handleAnalyzeDOM = () => {
@@ -47,6 +54,13 @@ const DevPanel = () => {
       toast.error("Failed to scrape data");
     }
   };
+
+  useEffect(() => {
+    if (activeTab === "source") {
+      const source = extractPageSource();
+      setPageSource(source);
+    }
+  }, [activeTab]);
 
   return (
     <div className="h-[calc(100vh-4rem)]">
@@ -105,6 +119,17 @@ const DevPanel = () => {
         >
           <Terminal size={20} />
           <span>Console</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("source")}
+          className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
+            activeTab === "source"
+              ? "border-primary-500 text-primary-500"
+              : "border-transparent"
+          }`}
+        >
+          <FileCode size={20} />
+          <span>Source</span>
         </button>
       </div>
       <div className="p-4">
@@ -168,6 +193,13 @@ const DevPanel = () => {
               <p className="text-green-400">Starting development server...</p>
             </div>
           </div>
+        )}
+        {activeTab === "source" && (
+          <SourceViewer
+            html={pageSource.html}
+            css={pageSource.css}
+            javascript={pageSource.javascript}
+          />
         )}
       </div>
     </div>

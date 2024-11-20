@@ -1,76 +1,57 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Crosshair, Save, Search } from "lucide-react";
 import { toast } from "sonner";
-import { Crosshair, Save } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
+import { ElementHighlighter } from "./VisualSelector/ElementHighlighter";
+import { SelectorPreview } from "./VisualSelector/SelectorPreview";
+import { findElementByDescription, generateSelector } from "@/utils/nlpSelector";
 
 interface ElementInfo {
   selector: string;
   element_type: string;
-  description?: string;
+  attributes: Record<string, string>;
 }
 
 export const VisualSelector = () => {
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedElement, setSelectedElement] = useState<ElementInfo | null>(null);
   const [description, setDescription] = useState("");
+  const [searchResults, setSearchResults] = useState<HTMLElement[]>([]);
 
-  useEffect(() => {
-    const handleElementSelect = (event: MouseEvent) => {
-      if (!isSelecting) return;
-      
-      event.preventDefault();
-      event.stopPropagation();
-      
-      const element = event.target as HTMLElement;
-      const selector = generateUniqueSelector(element);
-      
-      setSelectedElement({
-        selector,
-        element_type: element.tagName.toLowerCase(),
-      });
-      setIsSelecting(false);
-    };
+  const handleElementSelect = useCallback((element: HTMLElement) => {
+    const selector = generateSelector(element)[0];
+    const attributes = Array.from(element.attributes).reduce(
+      (acc, attr) => ({ ...acc, [attr.name]: attr.value }),
+      {}
+    );
 
-    if (isSelecting) {
-      document.addEventListener("click", handleElementSelect, true);
-      document.body.style.cursor = "crosshair";
+    setSelectedElement({
+      selector,
+      element_type: element.tagName.toLowerCase(),
+      attributes,
+    });
+    setIsSelecting(false);
+  }, []);
+
+  const handleSearch = () => {
+    if (!description) {
+      toast.error("Please enter an element description");
+      return;
+    }
+
+    const matches = findElementByDescription(description);
+    setSearchResults(matches);
+
+    if (matches.length > 0) {
+      matches[0].scrollIntoView({ behavior: "smooth", block: "center" });
+      handleElementSelect(matches[0]);
+      toast.success(`Found ${matches.length} matching elements`);
     } else {
-      document.removeEventListener("click", handleElementSelect, true);
-      document.body.style.cursor = "default";
+      toast.error("No matching elements found");
     }
-
-    return () => {
-      document.removeEventListener("click", handleElementSelect, true);
-      document.body.style.cursor = "default";
-    };
-  }, [isSelecting]);
-
-  const generateUniqueSelector = (element: HTMLElement): string => {
-    // Start with the element's tag
-    let selector = element.tagName.toLowerCase();
-    
-    // Add id if present
-    if (element.id) {
-      return `#${element.id}`;
-    }
-    
-    // Add classes
-    if (element.classList.length) {
-      selector += `.${Array.from(element.classList).join('.')}`;
-    }
-    
-    // Add position if needed
-    const parent = element.parentElement;
-    if (parent) {
-      const siblings = Array.from(parent.children);
-      const index = siblings.indexOf(element);
-      selector += `:nth-child(${index + 1})`;
-    }
-    
-    return selector;
   };
 
   const saveSelector = async () => {
@@ -79,25 +60,15 @@ export const VisualSelector = () => {
       return;
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      toast.error("You must be logged in to save selectors");
-      return;
-    }
-
     try {
-      const { error } = await supabase
-        .from('element_selectors')
-        .insert({
-          selector: selectedElement.selector,
-          element_type: selectedElement.element_type,
-          description: description || undefined,
-          user_id: user.id
-        });
+      const { error } = await supabase.from("element_selectors").insert({
+        selector: selectedElement.selector,
+        element_type: selectedElement.element_type,
+        description: description || undefined,
+        metadata: { attributes: selectedElement.attributes },
+      });
 
       if (error) throw error;
-
       toast.success("Selector saved successfully");
       setSelectedElement(null);
       setDescription("");
@@ -109,7 +80,7 @@ export const VisualSelector = () => {
 
   return (
     <Card className="p-4 space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
         <Button
           onClick={() => setIsSelecting(!isSelecting)}
           variant={isSelecting ? "destructive" : "default"}
@@ -117,6 +88,17 @@ export const VisualSelector = () => {
           <Crosshair className="w-4 h-4 mr-2" />
           {isSelecting ? "Cancel Selection" : "Select Element"}
         </Button>
+        <div className="flex-1 flex gap-2">
+          <Input
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Describe the element (e.g., 'main search button')"
+          />
+          <Button onClick={handleSearch} variant="outline">
+            <Search className="w-4 h-4 mr-2" />
+            Find Element
+          </Button>
+        </div>
         {selectedElement && (
           <Button onClick={saveSelector}>
             <Save className="w-4 h-4 mr-2" />
@@ -125,25 +107,14 @@ export const VisualSelector = () => {
         )}
       </div>
 
+      <ElementHighlighter isActive={isSelecting} onElementSelect={handleElementSelect} />
+
       {selectedElement && (
-        <div className="space-y-2">
-          <div>
-            <label className="text-sm font-medium">Selector:</label>
-            <Input value={selectedElement.selector} readOnly />
-          </div>
-          <div>
-            <label className="text-sm font-medium">Element Type:</label>
-            <Input value={selectedElement.element_type} readOnly />
-          </div>
-          <div>
-            <label className="text-sm font-medium">Description (optional):</label>
-            <Input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe this element..."
-            />
-          </div>
-        </div>
+        <SelectorPreview
+          selector={selectedElement.selector}
+          elementType={selectedElement.element_type}
+          attributes={selectedElement.attributes}
+        />
       )}
     </Card>
   );
