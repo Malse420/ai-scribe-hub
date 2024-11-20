@@ -51,22 +51,28 @@ export const useScriptCollaboration = (scriptId: string) => {
 
       if (scriptError) throw scriptError;
 
-      const collaborators = scriptData.collaborators || [];
-      const { data: userData, error: userError } = await supabase.auth.admin.getUserByEmail(email);
+      const currentCollaborators = (scriptData?.collaborators as string[]) || [];
+      
+      // Use admin API to get user by email
+      const { data: users, error: userError } = await supabase
+        .from('auth.users')
+        .select('id, email')
+        .eq('email', email)
+        .single();
 
-      if (userError || !userData) {
+      if (userError || !users) {
         throw new Error('User not found');
       }
 
       const { error } = await supabase
         .from('userscripts')
         .update({
-          collaborators: [...collaborators, userData.user.id]
+          collaborators: [...currentCollaborators, users.id]
         })
         .eq('id', scriptId);
 
       if (error) throw error;
-      return userData.user.id;
+      return users.id;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['script', scriptId] });
@@ -87,8 +93,8 @@ export const useScriptCollaboration = (scriptId: string) => {
 
       if (scriptError) throw scriptError;
 
-      const collaborators = scriptData.collaborators || [];
-      const updatedCollaborators = collaborators.filter((id: string) => id !== userId);
+      const currentCollaborators = (scriptData?.collaborators as string[]) || [];
+      const updatedCollaborators = currentCollaborators.filter(id => id !== userId);
 
       const { error } = await supabase
         .from('userscripts')
