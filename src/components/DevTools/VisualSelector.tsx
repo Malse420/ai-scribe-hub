@@ -79,14 +79,22 @@ export const VisualSelector = () => {
       return;
     }
 
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error("You must be logged in to save selectors");
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('element_selectors')
-        .insert([{
+        .insert({
           selector: selectedElement.selector,
           element_type: selectedElement.element_type,
           description: description || undefined,
-        }]);
+          user_id: user.id
+        });
 
       if (error) throw error;
 
