@@ -9,6 +9,8 @@ import Index from "./pages/Index";
 import ChatInterface from "./components/Chat/ChatInterface";
 import DevPanel from "./components/DevTools/DevPanel";
 import SettingsPage from "./components/Settings/SettingsPage";
+import { WorkflowList } from "./components/Workflows/WorkflowList";
+import { AnalyticsDashboard } from "./components/Analytics/AnalyticsDashboard";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +30,8 @@ const App = () => (
                 <Route path="/chat" element={<ChatInterface />} />
                 <Route path="/devtools" element={<DevPanel />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/workflows" element={<WorkflowList />} />
+                <Route path="/analytics" element={<AnalyticsDashboard />} />
               </Routes>
             </main>
           </div>

@@ -5,7 +5,9 @@ import {
   Code2, 
   Settings, 
   ChevronLeft, 
-  ChevronRight 
+  ChevronRight,
+  Activity,
+  Workflow
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -41,6 +43,20 @@ const Sidebar = () => {
         >
           <Code2 size={20} />
           {!isCollapsed && <span>Dev Tools</span>}
+        </Link>
+        <Link
+          to="/workflows"
+          className="flex items-center gap-3 p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+        >
+          <Workflow size={20} />
+          {!isCollapsed && <span>Workflows</span>}
+        </Link>
+        <Link
+          to="/analytics"
+          className="flex items-center gap-3 p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+        >
+          <Activity size={20} />
+          {!isCollapsed && <span>Analytics</span>}
         </Link>
         <Link
           to="/settings"
