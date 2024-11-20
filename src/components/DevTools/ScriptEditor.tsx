@@ -1,9 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Save, Play, Trash } from "lucide-react";
+import { Save, Play, Trash, UserPlus, Users } from "lucide-react";
 import { UserScript, saveScript, deleteScript } from "@/utils/scriptGeneration";
+import { useScriptCollaboration } from "@/hooks/useScriptCollaboration";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 interface ScriptEditorProps {
   initialScript?: UserScript;
@@ -23,6 +33,9 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
     }
   );
 
+  const [newCollaboratorEmail, setNewCollaboratorEmail] = useState("");
+  const { collaborators, addCollaborator, removeCollaborator } = useScriptCollaboration(script.id);
+
   const handleSave = () => {
     const updatedScript = {
       ...script,
@@ -39,10 +52,69 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
     }
   };
 
+  const handleAddCollaborator = async () => {
+    if (!newCollaboratorEmail) {
+      toast.error("Please enter an email address");
+      return;
+    }
+    await addCollaborator.mutateAsync(newCollaboratorEmail);
+    setNewCollaboratorEmail("");
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Script Editor</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle>Script Editor</CardTitle>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Users className="w-4 h-4 mr-2" />
+                Collaborators ({collaborators.length})
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Manage Collaborators</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Collaborator email"
+                    value={newCollaboratorEmail}
+                    onChange={(e) => setNewCollaboratorEmail(e.target.value)}
+                  />
+                  <Button onClick={handleAddCollaborator} size="sm">
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Add
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {collaborators.map((collaborator) => (
+                    <div
+                      key={collaborator.id}
+                      className="flex items-center justify-between p-2 bg-neutral-50 rounded-lg"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span>{collaborator.email}</span>
+                        <Badge variant={collaborator.online ? "success" : "secondary"}>
+                          {collaborator.online ? "Online" : "Offline"}
+                        </Badge>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeCollaborator.mutateAsync(collaborator.id)}
+                      >
+                        <Trash className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <Input
