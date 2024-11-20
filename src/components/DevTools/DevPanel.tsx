@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Code, Database, Terminal, FileCode, Crosshair } from "lucide-react";
 import ScriptEditor from "./ScriptEditor";
 import { VisualSelector } from "./VisualSelector";

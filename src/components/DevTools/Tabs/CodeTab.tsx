@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { analyzeDOMStructure } from "@/utils/pageAnalysis";
 import { toast } from "sonner";
