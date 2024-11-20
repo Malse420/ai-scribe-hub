@@ -1,5 +1,5 @@
-import { Save } from "lucide-react";
 import ApiKeySettings from "./ApiKeySettings";
+import StorageSettings from "./StorageSettings";
 
 const SettingsPage = () => {
   return (
@@ -11,6 +11,7 @@ const SettingsPage = () => {
         </p>
       </div>
 
+      <StorageSettings />
       <ApiKeySettings />
 
       <div className="space-y-6">
@@ -56,13 +57,6 @@ const SettingsPage = () => {
               </label>
             </div>
           </div>
-        </div>
-
-        <div className="pt-4">
-          <button className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors">
-            <Save size={20} />
-            <span>Save Changes</span>
-          </button>
         </div>
       </div>
     </div>

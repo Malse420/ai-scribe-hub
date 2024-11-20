@@ -1,15 +1,32 @@
-import { Bell } from "lucide-react";
+import { useState, useEffect } from "react";
+import StorageIndicator from "../Storage/StorageIndicator";
+import { LocalStorageManager } from "@/utils/localStorageManager";
 
 const Header = () => {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [storageType, setStorageType] = useState<"local" | "hybrid" | "cloud">(
+    LocalStorageManager.getEncrypted("storage_preference") || "hybrid"
+  );
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   return (
-    <header className="fixed top-0 right-0 left-64 h-16 bg-white border-b border-neutral-200 z-10">
+    <header className="fixed top-0 right-0 left-64 h-16 border-b border-neutral-200 bg-white z-50">
       <div className="flex items-center justify-between h-full px-6">
-        <div className="text-lg font-semibold">Developer Tools</div>
+        <h1 className="text-lg font-semibold">AI Scribe Hub</h1>
         <div className="flex items-center gap-4">
-          <button className="p-2 hover:bg-neutral-100 rounded-lg">
-            <Bell size={20} />
-          </button>
-          <div className="w-8 h-8 rounded-full bg-primary-500" />
+          <StorageIndicator isOnline={isOnline} storageType={storageType} />
         </div>
       </div>
     </header>
