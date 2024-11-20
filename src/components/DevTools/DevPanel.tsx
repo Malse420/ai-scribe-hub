@@ -1,13 +1,20 @@
 import { useState } from "react";
-import { Code, Database, Terminal, FileCode } from "lucide-react";
+import { Code, Database, Terminal, FileCode, Download } from "lucide-react";
 import ScriptEditor from "./ScriptEditor";
-import { analyzeDOMStructure, generateSelector } from "@/utils/pageAnalysis";
-import { scrapeData, exportData } from "@/utils/webScraping";
+import { analyzeDOMStructure, generateSelector, findElementByDescription } from "@/utils/pageAnalysis";
+import { scrapeData, exportData, downloadData, ScrapingConfig } from "@/utils/webScraping";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const DevPanel = () => {
   const [activeTab, setActiveTab] = useState("code");
   const [domAnalysis, setDomAnalysis] = useState<Record<string, number>>({});
+  const [elementDescription, setElementDescription] = useState("");
+  const [scrapingConfig, setScrapingConfig] = useState<ScrapingConfig>({
+    selector: "",
+    attributes: [],
+  });
 
   const handleAnalyzeDOM = () => {
     const structure = analyzeDOMStructure();
@@ -15,9 +22,29 @@ const DevPanel = () => {
     toast.success("DOM analysis complete");
   };
 
-  const handleGenerateSelector = (description: string) => {
-    const selectors = generateSelector(description);
-    toast.success(`Generated ${selectors.length} potential selectors`);
+  const handleGenerateSelector = () => {
+    if (!elementDescription) {
+      toast.error("Please enter an element description");
+      return;
+    }
+    const selectors = generateSelector(elementDescription);
+    if (selectors.length > 0) {
+      setScrapingConfig({ ...scrapingConfig, selector: selectors[0] });
+      toast.success(`Generated ${selectors.length} potential selectors`);
+    } else {
+      toast.error("No matching elements found");
+    }
+  };
+
+  const handleScrapeData = async () => {
+    try {
+      const data = await scrapeData(scrapingConfig);
+      const jsonData = exportData(data, 'json');
+      downloadData(jsonData, 'scraped-data.json');
+      toast.success("Data scraped and downloaded successfully");
+    } catch (error) {
+      toast.error("Failed to scrape data");
+    }
   };
 
   return (
@@ -46,15 +73,15 @@ const DevPanel = () => {
           <span>Scripts</span>
         </button>
         <button
-          onClick={() => setActiveTab("network")}
+          onClick={() => setActiveTab("scraping")}
           className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
-            activeTab === "network"
+            activeTab === "scraping"
               ? "border-primary-500 text-primary-500"
               : "border-transparent"
           }`}
         >
           <Database size={20} />
-          <span>Network</span>
+          <span>Scraping</span>
         </button>
         <button
           onClick={() => setActiveTab("console")}
@@ -71,13 +98,10 @@ const DevPanel = () => {
       <div className="p-4">
         {activeTab === "code" && (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Source Code</h2>
-            <button
-              onClick={handleAnalyzeDOM}
-              className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
-            >
+            <h2 className="text-lg font-semibold">Source Code Analysis</h2>
+            <Button onClick={handleAnalyzeDOM}>
               Analyze DOM Structure
-            </button>
+            </Button>
             <pre className="p-4 bg-neutral-100 rounded-lg overflow-x-auto">
               <code>{JSON.stringify(domAnalysis, null, 2)}</code>
             </pre>
@@ -88,17 +112,34 @@ const DevPanel = () => {
             <ScriptEditor />
           </div>
         )}
-        {activeTab === "network" && (
+        {activeTab === "scraping" && (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Network Requests</h2>
-            <div className="border border-neutral-200 rounded-lg">
-              <div className="p-4 border-b border-neutral-200">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">GET /api/data</span>
-                  <span className="text-green-500">200 OK</span>
-                </div>
+            <h2 className="text-lg font-semibold">Web Scraping</h2>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">Element Description</label>
+              <div className="flex gap-2">
+                <Input
+                  value={elementDescription}
+                  onChange={(e) => setElementDescription(e.target.value)}
+                  placeholder="Describe the element (e.g., 'main heading')"
+                />
+                <Button onClick={handleGenerateSelector}>
+                  Generate Selector
+                </Button>
               </div>
             </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">CSS Selector</label>
+              <Input
+                value={scrapingConfig.selector}
+                onChange={(e) => setScrapingConfig({ ...scrapingConfig, selector: e.target.value })}
+                placeholder="Enter CSS selector"
+              />
+            </div>
+            <Button onClick={handleScrapeData} className="w-full">
+              <Download className="w-4 h-4 mr-2" />
+              Scrape and Download Data
+            </Button>
           </div>
         )}
         {activeTab === "console" && (
