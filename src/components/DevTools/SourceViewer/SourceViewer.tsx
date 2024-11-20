@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Editor from "@monaco-editor/react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileCode, FileText, Paintbrush } from "lucide-react";
+import { toast } from "sonner";
 
 interface SourceViewerProps {
   html: string;
@@ -17,9 +18,15 @@ export const SourceViewer = ({ html, css, javascript }: SourceViewerProps) => {
   const editorOptions = {
     minimap: { enabled: false },
     fontSize: 14,
-    lineNumbers: "on" as const, // Fix the type by using a const assertion
+    lineNumbers: "on" as const,
     readOnly: true,
     automaticLayout: true,
+    wordWrap: "on" as const,
+  };
+
+  const handleCopy = (content: string) => {
+    navigator.clipboard.writeText(content);
+    toast.success("Copied to clipboard");
   };
 
   return (
@@ -55,6 +62,11 @@ export const SourceViewer = ({ html, css, javascript }: SourceViewerProps) => {
                 value={html}
                 options={editorOptions}
                 theme="vs-dark"
+                onMount={(editor) => {
+                  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyC, () => {
+                    handleCopy(html);
+                  });
+                }}
               />
             </TabsContent>
             <TabsContent value="css" className="m-0">
@@ -64,6 +76,11 @@ export const SourceViewer = ({ html, css, javascript }: SourceViewerProps) => {
                 value={css}
                 options={editorOptions}
                 theme="vs-dark"
+                onMount={(editor) => {
+                  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyC, () => {
+                    handleCopy(css);
+                  });
+                }}
               />
             </TabsContent>
             <TabsContent value="javascript" className="m-0">
@@ -73,6 +90,11 @@ export const SourceViewer = ({ html, css, javascript }: SourceViewerProps) => {
                 value={javascript}
                 options={editorOptions}
                 theme="vs-dark"
+                onMount={(editor) => {
+                  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyC, () => {
+                    handleCopy(javascript);
+                  });
+                }}
               />
             </TabsContent>
           </ScrollArea>
