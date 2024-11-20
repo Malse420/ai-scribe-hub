@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { editor } from "monaco-editor";
 
 interface ScriptEditorProps {
   initialScript?: UserScript;
@@ -75,7 +76,7 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
     }
   };
 
-  const editorOptions = {
+  const editorOptions: editor.IStandaloneEditorConstructionOptions = {
     minimap: { enabled: true },
     fontSize: 14,
     lineNumbers: "on",

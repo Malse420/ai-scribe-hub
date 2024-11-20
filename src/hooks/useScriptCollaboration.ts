@@ -53,30 +53,30 @@ export const useScriptCollaboration = (scriptId: string) => {
 
       const currentCollaborators = (scriptData?.collaborators as string[]) || [];
       
-      // Get user by email using auth API with correct pagination parameters
-      const { data: userData, error: userError } = await supabase.auth.admin.listUsers({
+      const { data: { users }, error: userError } = await supabase.auth.admin.listUsers({
         page: 1,
-        perPage: 1
+        perPage: 100
       });
 
-      // Find user with matching email
-      const user = userData?.users?.find(u => u.email === email);
-
-      if (userError || !user) {
-        throw new Error('User not found');
+      if (userError || !users) {
+        throw new Error('Failed to fetch users');
       }
 
-      const userId = user.id;
+      const user = users.find(u => u.email === email);
+
+      if (!user) {
+        throw new Error('User not found');
+      }
 
       const { error } = await supabase
         .from('userscripts')
         .update({
-          collaborators: [...currentCollaborators, userId]
+          collaborators: [...currentCollaborators, user.id]
         })
         .eq('id', scriptId);
 
       if (error) throw error;
-      return userId;
+      return user.id;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['script', scriptId] });
