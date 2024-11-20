@@ -1,4 +1,5 @@
 import { Save } from "lucide-react";
+import ApiKeySettings from "./ApiKeySettings";
 
 const SettingsPage = () => {
   return (
@@ -10,14 +11,14 @@ const SettingsPage = () => {
         </p>
       </div>
 
+      <ApiKeySettings />
+
       <div className="space-y-6">
         <div className="space-y-4">
           <h3 className="text-lg font-medium">General</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Theme
-              </label>
+              <label className="block text-sm font-medium mb-1">Theme</label>
               <select className="w-full p-2 border border-neutral-200 rounded-lg">
                 <option>Light</option>
                 <option>Dark</option>
@@ -25,9 +26,7 @@ const SettingsPage = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Language
-              </label>
+              <label className="block text-sm font-medium mb-1">Language</label>
               <select className="w-full p-2 border border-neutral-200 rounded-lg">
                 <option>English</option>
                 <option>Spanish</option>
