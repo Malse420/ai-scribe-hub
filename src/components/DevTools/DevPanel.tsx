@@ -3,7 +3,7 @@ import { Code, Database, Terminal, FileCode, Download, Crosshair } from "lucide-
 import ScriptEditor from "./ScriptEditor";
 import { VisualSelector } from "./VisualSelector";
 import { analyzeDOMStructure, generateSelector } from "@/utils/pageAnalysis";
-import { scrapeData, exportData, downloadData } from "@/utils/webScraping";
+import { scrapeData, exportData, downloadData, ScrapingConfig } from "@/utils/webScraping";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
