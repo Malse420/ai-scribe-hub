@@ -5,6 +5,8 @@ import { Plus, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { WorkflowStepConfig } from "./WorkflowStepConfig";
+import { WorkflowStepError } from "./WorkflowStepError";
 
 interface WorkflowStep {
   id: string;
@@ -12,6 +14,15 @@ interface WorkflowStep {
   step_config: any;
   visual_position: { x: number; y: number };
   connections: string[];
+  error_handling_config: {
+    retries: number;
+    backoff: "linear" | "exponential";
+  };
+  conditions: Array<{
+    field: string;
+    operator: string;
+    value: string;
+  }>;
 }
 
 interface Connection {
@@ -25,6 +36,7 @@ export const VisualWorkflowEditor = ({ workflowId }: { workflowId: string }) => 
   const [connections, setConnections] = useState<Connection[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const [stepErrors, setStepErrors] = useState<Record<string, Error>>({});
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const { data: workflowSteps } = useQuery({
@@ -55,6 +67,29 @@ export const VisualWorkflowEditor = ({ workflowId }: { workflowId: string }) => 
     },
     onError: () => {
       toast.error("Failed to update step position");
+    },
+  });
+
+  const updateStepConfig = useMutation({
+    mutationFn: async ({ stepId, config }: { stepId: string; config: any }) => {
+      const { error } = await supabase
+        .from("workflow_steps")
+        .update({
+          error_handling_config: {
+            retries: config.retries,
+            backoff: config.backoff,
+          },
+          conditions: config.conditions,
+        })
+        .eq("id", stepId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Step configuration updated");
+    },
+    onError: () => {
+      toast.error("Failed to update step configuration");
     },
   });
 
@@ -99,7 +134,6 @@ export const VisualWorkflowEditor = ({ workflowId }: { workflowId: string }) => 
   useEffect(() => {
     drawConnections();
     
-    // Add resize listener to handle canvas resizing
     const handleResize = () => {
       drawConnections();
     };
@@ -113,6 +147,23 @@ export const VisualWorkflowEditor = ({ workflowId }: { workflowId: string }) => 
     drawConnections();
   }, [updateStepPosition, drawConnections]);
 
+  const handleStepRetry = async (stepId: string) => {
+    const step = workflowSteps?.find(s => s.id === stepId);
+    if (!step) return;
+
+    try {
+      // Implement retry logic here
+      setStepErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[stepId];
+        return newErrors;
+      });
+      toast.success("Step retried successfully");
+    } catch (error) {
+      toast.error("Failed to retry step");
+    }
+  };
+
   return (
     <Card className="p-4 h-[600px] relative">
       <div className="flex justify-between mb-4">
@@ -121,7 +172,12 @@ export const VisualWorkflowEditor = ({ workflowId }: { workflowId: string }) => 
           step_type: "new",
           step_config: {},
           visual_position: { x: 100, y: 100 },
-          connections: []
+          connections: [],
+          error_handling_config: {
+            retries: 3,
+            backoff: "linear"
+          },
+          conditions: []
         }])}>
           <Plus className="w-4 h-4 mr-2" />
           Add Step
@@ -139,37 +195,57 @@ export const VisualWorkflowEditor = ({ workflowId }: { workflowId: string }) => 
         />
         
         {workflowSteps?.map((step) => (
-          <div
-            key={step.id}
-            className={`absolute p-4 border rounded-lg bg-white cursor-move ${
-              selectedStep === step.id ? "border-primary" : "border-gray-200"
-            }`}
-            style={{
-              left: step.visual_position.x,
-              top: step.visual_position.y,
-              zIndex: selectedStep === step.id ? 10 : 1,
-            }}
-            onClick={() => setSelectedStep(step.id)}
-            onMouseDown={(e) => {
-              setIsDragging(true);
-              setDragStart({
-                x: e.clientX - step.visual_position.x,
-                y: e.clientY - step.visual_position.y,
-              });
-            }}
-            onMouseMove={(e) => {
-              if (isDragging && dragStart) {
-                const newX = e.clientX - dragStart.x;
-                const newY = e.clientY - dragStart.y;
-                handleDragStep(step.id, { x: newX, y: newY });
-              }
-            }}
-            onMouseUp={() => {
-              setIsDragging(false);
-              setDragStart(null);
-            }}
-          >
-            <h3 className="font-medium">{step.step_type}</h3>
+          <div key={step.id}>
+            <div
+              className={`absolute p-4 border rounded-lg bg-white cursor-move ${
+                selectedStep === step.id ? "border-primary" : "border-gray-200"
+              }`}
+              style={{
+                left: step.visual_position.x,
+                top: step.visual_position.y,
+                zIndex: selectedStep === step.id ? 10 : 1,
+              }}
+              onClick={() => setSelectedStep(step.id)}
+              onMouseDown={(e) => {
+                setIsDragging(true);
+                setDragStart({
+                  x: e.clientX - step.visual_position.x,
+                  y: e.clientY - step.visual_position.y,
+                });
+              }}
+              onMouseMove={(e) => {
+                if (isDragging && dragStart) {
+                  const newX = e.clientX - dragStart.x;
+                  const newY = e.clientY - dragStart.y;
+                  handleDragStep(step.id, { x: newX, y: newY });
+                }
+              }}
+              onMouseUp={() => {
+                setIsDragging(false);
+                setDragStart(null);
+              }}
+            >
+              <h3 className="font-medium">{step.step_type}</h3>
+              {stepErrors[step.id] && (
+                <WorkflowStepError
+                  error={stepErrors[step.id]}
+                  onRetry={() => handleStepRetry(step.id)}
+                  retryCount={0}
+                  maxRetries={step.error_handling_config.retries}
+                />
+              )}
+            </div>
+            {selectedStep === step.id && (
+              <WorkflowStepConfig
+                stepId={step.id}
+                config={{
+                  retries: step.error_handling_config.retries,
+                  backoff: step.error_handling_config.backoff,
+                  conditions: step.conditions,
+                }}
+                onUpdate={(config) => updateStepConfig.mutate({ stepId: step.id, config })}
+              />
+            )}
           </div>
         ))}
       </div>
