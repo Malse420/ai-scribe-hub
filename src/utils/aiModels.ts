@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { getApiKey } from "./apiKeys";
 
 interface AIModelResponse {
   result: string;
@@ -9,8 +10,14 @@ export const generateWithAI = async (
   prompt: string,
   task: 'code' | 'chat'
 ): Promise<AIModelResponse> => {
+  const huggingFaceToken = getApiKey("huggingface");
+  
+  if (!huggingFaceToken) {
+    throw new Error('Hugging Face API key is required');
+  }
+
   const { data, error } = await supabase.functions.invoke('ai-model-handler', {
-    body: { prompt, task },
+    body: { prompt, task, huggingFaceToken },
   });
 
   if (error) {

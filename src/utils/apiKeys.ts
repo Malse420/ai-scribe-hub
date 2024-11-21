@@ -1,4 +1,4 @@
-type ApiProvider = "openai" | "anthropic" | "google";
+type ApiProvider = "openai" | "anthropic" | "google" | "huggingface";
 
 export const getApiKey = (provider: ApiProvider): string | null => {
   return localStorage.getItem(`${provider}_key`);
@@ -21,5 +21,6 @@ export const getPreferredProvider = (): ApiProvider => {
   if (hasValidApiKey("openai")) return "openai";
   if (hasValidApiKey("anthropic")) return "anthropic";
   if (hasValidApiKey("google")) return "google";
+  if (hasValidApiKey("huggingface")) return "huggingface";
   return "openai"; // Default fallback
 };

@@ -6,22 +6,23 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const hf = new HfInference(Deno.env.get('HUGGING_FACE_ACCESS_TOKEN'))
-
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { prompt, model, task } = await req.json()
+    const { prompt, task, huggingFaceToken } = await req.json()
 
+    if (!huggingFaceToken) {
+      throw new Error('Hugging Face token is required')
+    }
+
+    const hf = new HfInference(huggingFaceToken)
     let response
 
     switch (task) {
       case 'code':
-        // Use CodeLlama for code-related tasks
         response = await hf.textGeneration({
           model: 'codellama/CodeLlama-34b-Instruct-hf',
           inputs: prompt,
@@ -34,7 +35,6 @@ serve(async (req) => {
         break
 
       case 'chat':
-        // Use Qwen for general chat and assistance
         response = await hf.textGeneration({
           model: 'Qwen/Qwen-14B-Chat',
           inputs: prompt,
@@ -49,8 +49,6 @@ serve(async (req) => {
       default:
         throw new Error('Invalid task type specified')
     }
-
-    console.log(`Successfully processed ${task} task with model ${model}`)
 
     return new Response(
       JSON.stringify({ 

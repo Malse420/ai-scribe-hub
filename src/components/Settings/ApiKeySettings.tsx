@@ -18,6 +18,7 @@ const ApiKeySettings = () => {
     openai: "",
     anthropic: "",
     google: "",
+    huggingface: "",
   });
 
   const handleSave = async () => {
@@ -39,8 +40,10 @@ const ApiKeySettings = () => {
           });
         }
       }
+      toast.success("API keys saved successfully");
     } catch (error) {
       console.error('Failed to save API keys:', error);
+      toast.error("Failed to save API keys");
     }
   };
 
@@ -49,6 +52,7 @@ const ApiKeySettings = () => {
     if (key) {
       await deleteApiKey.mutateAsync(key.id);
       setNewKeys(prev => ({ ...prev, [service]: "" }));
+      toast.success(`${service} API key deleted`);
     }
   };
 
@@ -121,6 +125,26 @@ const ApiKeySettings = () => {
               variant="outline"
               size="icon"
               onClick={() => handleDelete('google')}
+            >
+              <Trash className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Hugging Face API Key</label>
+          <div className="flex gap-2">
+            <Input
+              type="password"
+              value={newKeys.huggingface}
+              onChange={(e) =>
+                setNewKeys((prev) => ({ ...prev, huggingface: e.target.value }))
+              }
+              placeholder="hf_..."
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handleDelete('huggingface')}
             >
               <Trash className="h-4 w-4" />
             </Button>
