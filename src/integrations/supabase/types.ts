@@ -51,6 +51,30 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          created_at: string | null
+          event_data: Json | null
+          event_name: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_name: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_name?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       data_exports: {
         Row: {
           batch_id: string | null
@@ -135,6 +159,30 @@ export type Database = {
           },
         ]
       }
+      dom_snapshots: {
+        Row: {
+          created_at: string | null
+          dom_structure: Json
+          id: string
+          page_url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          dom_structure: Json
+          id?: string
+          page_url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          dom_structure?: Json
+          id?: string
+          page_url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       element_selectors: {
         Row: {
           confidence_score: number | null
@@ -218,6 +266,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      script_validation_results: {
+        Row: {
+          created_at: string | null
+          error_messages: string[] | null
+          id: string
+          script_id: string
+          updated_at: string | null
+          user_id: string
+          validation_results: Json | null
+          validation_status: string
+        }
+        Insert: {
+          created_at?: string | null
+          error_messages?: string[] | null
+          id?: string
+          script_id: string
+          updated_at?: string | null
+          user_id: string
+          validation_results?: Json | null
+          validation_status?: string
+        }
+        Update: {
+          created_at?: string | null
+          error_messages?: string[] | null
+          id?: string
+          script_id?: string
+          updated_at?: string | null
+          user_id?: string
+          validation_results?: Json | null
+          validation_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "script_validation_results_script_id_fkey"
+            columns: ["script_id"]
+            isOneToOne: false
+            referencedRelation: "userscripts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shared_resources: {
         Row: {
@@ -390,8 +479,10 @@ export type Database = {
       }
       workflow_steps: {
         Row: {
+          conditions: Json | null
           connections: Json | null
           created_at: string | null
+          error_handling_config: Json | null
           id: string
           step_config: Json
           step_order: number
@@ -401,8 +492,10 @@ export type Database = {
           workflow_id: string
         }
         Insert: {
+          conditions?: Json | null
           connections?: Json | null
           created_at?: string | null
+          error_handling_config?: Json | null
           id?: string
           step_config?: Json
           step_order: number
@@ -412,8 +505,10 @@ export type Database = {
           workflow_id: string
         }
         Update: {
+          conditions?: Json | null
           connections?: Json | null
           created_at?: string | null
+          error_handling_config?: Json | null
           id?: string
           step_config?: Json
           step_order?: number
