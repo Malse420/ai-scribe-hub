@@ -12,6 +12,7 @@ export type Database = {
       analytics: {
         Row: {
           created_at: string | null
+          custom_dimensions: Json | null
           device_id: string | null
           event_data: Json | null
           event_type: string
@@ -20,9 +21,11 @@ export type Database = {
           session_events: Json | null
           session_id: string | null
           user_id: string
+          user_properties: Json | null
         }
         Insert: {
           created_at?: string | null
+          custom_dimensions?: Json | null
           device_id?: string | null
           event_data?: Json | null
           event_type: string
@@ -31,9 +34,11 @@ export type Database = {
           session_events?: Json | null
           session_id?: string | null
           user_id: string
+          user_properties?: Json | null
         }
         Update: {
           created_at?: string | null
+          custom_dimensions?: Json | null
           device_id?: string | null
           event_data?: Json | null
           event_type?: string
@@ -42,33 +47,43 @@ export type Database = {
           session_events?: Json | null
           session_id?: string | null
           user_id?: string
+          user_properties?: Json | null
         }
         Relationships: []
       }
       data_exports: {
         Row: {
+          batch_id: string | null
           created_at: string | null
           filename: string
           id: string
           last_accessed_at: string | null
+          next_retry_at: string | null
+          retry_count: number | null
           status: string
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          batch_id?: string | null
           created_at?: string | null
           filename: string
           id?: string
           last_accessed_at?: string | null
+          next_retry_at?: string | null
+          retry_count?: number | null
           status?: string
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          batch_id?: string | null
           created_at?: string | null
           filename?: string
           id?: string
           last_accessed_at?: string | null
+          next_retry_at?: string | null
+          retry_count?: number | null
           status?: string
           updated_at?: string | null
           user_id?: string
@@ -200,8 +215,10 @@ export type Database = {
           api_key: string
           api_service: string
           created_at: string | null
+          expires_at: string | null
           id: string
           last_accessed_at: string | null
+          last_notification_sent: string | null
           updated_at: string | null
           user_id: string
         }
@@ -209,8 +226,10 @@ export type Database = {
           api_key: string
           api_service: string
           created_at?: string | null
+          expires_at?: string | null
           id?: string
           last_accessed_at?: string | null
+          last_notification_sent?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -218,8 +237,10 @@ export type Database = {
           api_key?: string
           api_service?: string
           created_at?: string | null
+          expires_at?: string | null
           id?: string
           last_accessed_at?: string | null
+          last_notification_sent?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -227,6 +248,7 @@ export type Database = {
       }
       userscripts: {
         Row: {
+          audit_log: Json | null
           collaborators: Json | null
           content: string
           created_at: string | null
@@ -235,6 +257,7 @@ export type Database = {
           last_accessed_at: string | null
           last_editor: string | null
           parent_version_id: string | null
+          permissions: Json | null
           shared_with: Json | null
           title: string
           updated_at: string | null
@@ -242,6 +265,7 @@ export type Database = {
           version: number | null
         }
         Insert: {
+          audit_log?: Json | null
           collaborators?: Json | null
           content: string
           created_at?: string | null
@@ -250,6 +274,7 @@ export type Database = {
           last_accessed_at?: string | null
           last_editor?: string | null
           parent_version_id?: string | null
+          permissions?: Json | null
           shared_with?: Json | null
           title: string
           updated_at?: string | null
@@ -257,6 +282,7 @@ export type Database = {
           version?: number | null
         }
         Update: {
+          audit_log?: Json | null
           collaborators?: Json | null
           content?: string
           created_at?: string | null
@@ -265,6 +291,7 @@ export type Database = {
           last_accessed_at?: string | null
           last_editor?: string | null
           parent_version_id?: string | null
+          permissions?: Json | null
           shared_with?: Json | null
           title?: string
           updated_at?: string | null
@@ -318,30 +345,36 @@ export type Database = {
       }
       workflow_steps: {
         Row: {
+          connections: Json | null
           created_at: string | null
           id: string
           step_config: Json
           step_order: number
           step_type: string
           updated_at: string | null
+          visual_position: Json | null
           workflow_id: string
         }
         Insert: {
+          connections?: Json | null
           created_at?: string | null
           id?: string
           step_config?: Json
           step_order: number
           step_type: string
           updated_at?: string | null
+          visual_position?: Json | null
           workflow_id: string
         }
         Update: {
+          connections?: Json | null
           created_at?: string | null
           id?: string
           step_config?: Json
           step_order?: number
           step_type?: string
           updated_at?: string | null
+          visual_position?: Json | null
           workflow_id?: string
         }
         Relationships: [
