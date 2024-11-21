@@ -65,6 +65,13 @@ export const VisualWorkflowEditor = ({ workflowId }: { workflowId: string }) => 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Set canvas size to match container
+    const container = canvas.parentElement;
+    if (container) {
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+    }
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = "#8B5CF6";
     ctx.lineWidth = 2;
@@ -91,6 +98,14 @@ export const VisualWorkflowEditor = ({ workflowId }: { workflowId: string }) => 
 
   useEffect(() => {
     drawConnections();
+    
+    // Add resize listener to handle canvas resizing
+    const handleResize = () => {
+      drawConnections();
+    };
+    
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [drawConnections]);
 
   const handleDragStep = useCallback((stepId: string, position: { x: number; y: number }) => {
@@ -121,8 +136,6 @@ export const VisualWorkflowEditor = ({ workflowId }: { workflowId: string }) => 
         <canvas
           ref={canvasRef}
           className="absolute inset-0 pointer-events-none"
-          width={800}
-          height={600}
         />
         
         {workflowSteps?.map((step) => (
