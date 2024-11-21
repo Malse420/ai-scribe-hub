@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { ElementHighlighter } from "./VisualSelector/ElementHighlighter";
 import { SelectorPreview } from "./VisualSelector/SelectorPreview";
-import { findElementByDescription, generateSelector } from "@/utils/nlpSelector";
+import { findElementByDescription } from "@/utils/nlpSelector";
+import { useAIAssistant } from "@/contexts/AIAssistantContext";
 
 interface ElementInfo {
   selector: string;
@@ -20,9 +21,10 @@ export const VisualSelector = () => {
   const [selectedElement, setSelectedElement] = useState<ElementInfo | null>(null);
   const [description, setDescription] = useState("");
   const [searchResults, setSearchResults] = useState<HTMLElement[]>([]);
+  const { processQuery } = useAIAssistant();
 
-  const handleElementSelect = useCallback((element: HTMLElement) => {
-    const selector = generateSelector(element)[0];
+  const handleElementSelect = useCallback(async (element: HTMLElement) => {
+    const selector = await processQuery(`Generate a robust CSS selector for this element: ${element.outerHTML}`);
     const attributes = Array.from(element.attributes).reduce(
       (acc, attr) => ({ ...acc, [attr.name]: attr.value }),
       {}
@@ -34,23 +36,33 @@ export const VisualSelector = () => {
       attributes,
     });
     setIsSelecting(false);
-  }, []);
 
-  const handleSearch = () => {
+    // Get explanation from AI
+    const explanation = await processQuery(`Explain this element's role and attributes: ${element.outerHTML}`);
+    toast.info(explanation);
+  }, [processQuery]);
+
+  const handleSearch = async () => {
     if (!description) {
       toast.error("Please enter an element description");
       return;
     }
 
-    const matches = findElementByDescription(description);
-    setSearchResults(matches);
+    try {
+      const enhancedQuery = await processQuery(`Convert this description to a technical selector query: ${description}`);
+      const matches = findElementByDescription(enhancedQuery);
+      setSearchResults(matches);
 
-    if (matches.length > 0) {
-      matches[0].scrollIntoView({ behavior: "smooth", block: "center" });
-      handleElementSelect(matches[0]);
-      toast.success(`Found ${matches.length} matching elements`);
-    } else {
-      toast.error("No matching elements found");
+      if (matches.length > 0) {
+        matches[0].scrollIntoView({ behavior: "smooth", block: "center" });
+        handleElementSelect(matches[0]);
+        toast.success(`Found ${matches.length} matching elements`);
+      } else {
+        toast.error("No matching elements found");
+      }
+    } catch (error) {
+      toast.error("Failed to process search");
+      console.error(error);
     }
   };
 
@@ -92,7 +104,7 @@ export const VisualSelector = () => {
           <Input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe the element (e.g., 'main search button')"
+            placeholder="Describe the element (e.g., 'main search button in the header')"
           />
           <Button onClick={handleSearch} variant="outline">
             <Search className="w-4 h-4 mr-2" />

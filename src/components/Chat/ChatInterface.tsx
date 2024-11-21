@@ -1,55 +1,72 @@
 import { useState } from "react";
-import { Send } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
+import { useAIAssistant } from "@/contexts/AIAssistantContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([]);
   const [input, setInput] = useState("");
+  const { processQuery, isProcessing } = useAIAssistant();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || isProcessing) return;
 
-    setMessages([...messages, { role: "user", content: input }]);
+    const userMessage = { role: "user", content: input };
+    setMessages(prev => [...prev, userMessage]);
     setInput("");
+
+    try {
+      const response = await processQuery(input);
+      setMessages(prev => [...prev, { role: "assistant", content: response }]);
+    } catch (error) {
+      console.error('Failed to get response:', error);
+    }
   };
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] max-w-3xl mx-auto">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`flex ${
-              message.role === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
+      <ScrollArea className="flex-1 p-4">
+        <div className="space-y-4">
+          {messages.map((message, index) => (
             <div
-              className={`max-w-[80%] p-3 rounded-lg ${
-                message.role === "user"
-                  ? "bg-primary-500 text-white"
-                  : "bg-neutral-100"
+              key={index}
+              className={`flex ${
+                message.role === "user" ? "justify-end" : "justify-start"
               }`}
             >
-              {message.content}
+              <div
+                className={`max-w-[80%] p-3 rounded-lg ${
+                  message.role === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted"
+                }`}
+              >
+                {message.content}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
-      <form onSubmit={handleSubmit} className="p-4 border-t border-neutral-200">
+          ))}
+        </div>
+      </ScrollArea>
+      
+      <form onSubmit={handleSubmit} className="p-4 border-t">
         <div className="flex gap-2">
-          <input
-            type="text"
+          <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 p-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="Ask anything..."
+            disabled={isProcessing}
+            className="flex-1"
           />
-          <button
-            type="submit"
-            className="p-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
-          >
-            <Send size={20} />
-          </button>
+          <Button type="submit" disabled={isProcessing}>
+            {isProcessing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
         </div>
       </form>
     </div>
