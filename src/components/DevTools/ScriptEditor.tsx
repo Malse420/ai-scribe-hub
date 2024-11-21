@@ -110,7 +110,7 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
           newCollaboratorEmail={newCollaboratorEmail}
           setNewCollaboratorEmail={setNewCollaboratorEmail}
           handleAddCollaborator={addCollaborator}
-          removeCollaborator={removeCollaborator}
+          removeCollaborator={(id: string) => removeCollaborator.mutate(id)}
           setShowHistory={setShowHistory}
           showHistory={showHistory}
           updatePermissions={updatePermissions}

@@ -18,6 +18,11 @@ export interface UserScript {
   last_editor?: string;
   collaborators?: string[];
   active_collaborators?: string[];
+  audit_log?: Array<{
+    action: string;
+    timestamp: string;
+    details: any;
+  }>;
   version_history?: {
     version: number;
     content: string;

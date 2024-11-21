@@ -5,15 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Users, UserPlus, History, Trash } from "lucide-react";
 import { Collaborator } from "@/types/script";
+import { UseMutationResult } from "@tanstack/react-query";
 
 interface ScriptEditorHeaderProps {
   collaborators: Collaborator[];
   newCollaboratorEmail: string;
   setNewCollaboratorEmail: (email: string) => void;
   handleAddCollaborator: () => void;
-  removeCollaborator: any;
+  removeCollaborator: (id: string) => void;
   setShowHistory: (show: boolean) => void;
   showHistory: boolean;
+  updatePermissions: UseMutationResult<any, Error, { read: string[]; write: string[]; admin: string[] }>;
 }
 
 const ScriptEditorHeader = ({
@@ -24,6 +26,7 @@ const ScriptEditorHeader = ({
   removeCollaborator,
   setShowHistory,
   showHistory,
+  updatePermissions,
 }: ScriptEditorHeaderProps) => {
   return (
     <CardHeader>
@@ -68,7 +71,7 @@ const ScriptEditorHeader = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeCollaborator.mutateAsync(collaborator.id)}
+                        onClick={() => removeCollaborator(collaborator.id)}
                       >
                         <Trash className="w-4 h-4" />
                       </Button>
