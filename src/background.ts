@@ -4,7 +4,7 @@ import { supabase } from "./lib/supabase";
 // Listen for messages from content script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "NAVIGATE") {
-    // Handle navigation actions from the mobile sidebar
+    // Handle navigation actions from the sidebar
     chrome.tabs.create({
       url: chrome.runtime.getURL(`index.html#/${message.action}`),
       active: true
@@ -31,16 +31,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.type === "SYNC_DATA") {
     if (supabase) {
-      // Handle the Promise properly
-      void supabase
-        .from("user_data")
-        .upsert(message.data)
-        .then((response) => {
+      // Handle the Promise properly with async/await
+      void (async () => {
+        try {
+          const response = await supabase
+            .from("user_data")
+            .upsert(message.data);
           sendResponse({ success: true, data: response.data });
-        })
-        .catch((error) => {
+        } catch (error) {
           sendResponse({ success: false, error });
-        });
+        }
+      })();
       return true;
     }
   }
