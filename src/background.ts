@@ -31,7 +31,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.type === "SYNC_DATA") {
     if (supabase) {
-      supabase
+      // Handle the Promise properly
+      void supabase
         .from("user_data")
         .upsert(message.data)
         .then((response) => {

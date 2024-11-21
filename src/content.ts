@@ -5,30 +5,55 @@ const createMobileSidebar = () => {
   const sidebar = document.createElement('div');
   sidebar.id = 'ai-scribe-mobile-sidebar';
   sidebar.innerHTML = `
-    <div class="ai-scribe-handle"></div>
+    <div class="ai-scribe-handle">
+      <span class="ai-scribe-handle-icon">⚡</span>
+    </div>
     <div class="ai-scribe-content">
-      <div class="ai-scribe-header">AI Scribe Hub</div>
+      <div class="ai-scribe-header">
+        <span class="ai-scribe-version">AI Scribe v9.5</span>
+        <button class="ai-scribe-close">×</button>
+      </div>
       <nav class="ai-scribe-nav">
-        <button class="ai-scribe-nav-item" data-action="chat">
-          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-          Chat
+        <button class="ai-scribe-nav-item" data-action="capture">
+          <span class="ai-scribe-icon">📸</span>
+          Capture view
         </button>
-        <button class="ai-scribe-nav-item" data-action="devtools">
-          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
-            <path d="M20 7h-7m7 10h-7M8 7l-4 5 4 5"></path>
-          </svg>
-          Dev Tools
+        <button class="ai-scribe-nav-item" data-action="search">
+          <span class="ai-scribe-icon">🔍</span>
+          Search the web
         </button>
-        <button class="ai-scribe-nav-item" data-action="settings">
-          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-          Settings
+        <button class="ai-scribe-nav-item" data-action="explain">
+          <span class="ai-scribe-icon">🤖</span>
+          Explain
+        </button>
+        <button class="ai-scribe-nav-item" data-action="ask">
+          <span class="ai-scribe-icon">💭</span>
+          Ask page
+        </button>
+        <button class="ai-scribe-nav-item" data-action="summarize">
+          <span class="ai-scribe-icon">✨</span>
+          Summarize
+        </button>
+        <button class="ai-scribe-nav-item" data-action="extract">
+          <span class="ai-scribe-icon">📊</span>
+          Extract data
+        </button>
+        <button class="ai-scribe-nav-item" data-action="repurpose">
+          <span class="ai-scribe-icon">📝</span>
+          Repurpose page
+        </button>
+        <button class="ai-scribe-nav-item" data-action="rewrite">
+          <span class="ai-scribe-icon">✏️</span>
+          Rewrite
+        </button>
+        <button class="ai-scribe-nav-item" data-action="reply">
+          <span class="ai-scribe-icon">✉️</span>
+          Write a reply
         </button>
       </nav>
+      <div class="ai-scribe-footer">
+        <input type="text" class="ai-scribe-input" placeholder="Type a question... Press / for commands, {{ for params." />
+      </div>
     </div>
   `;
 
@@ -40,13 +65,14 @@ const createMobileSidebar = () => {
       right: 0;
       top: 0;
       bottom: 0;
-      width: 280px;
-      background: white;
-      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+      width: 320px;
+      background: #1a1b1e;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
       z-index: 2147483647;
-      transform: translateX(240px);
+      transform: translateX(280px);
       transition: transform 0.3s ease;
       font-family: system-ui, -apple-system, sans-serif;
+      color: #fff;
     }
 
     #ai-scribe-mobile-sidebar:hover,
@@ -56,46 +82,57 @@ const createMobileSidebar = () => {
 
     .ai-scribe-handle {
       position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
+      left: -40px;
+      top: 50%;
+      transform: translateY(-50%);
       width: 40px;
-      background: #0070F3;
+      height: 40px;
+      background: #2d2e32;
+      border-radius: 8px 0 0 8px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-      font-weight: 500;
-      font-size: 14px;
-      user-select: none;
+      color: #fff;
     }
 
-    .ai-scribe-handle::before {
-      content: "AI Scribe Hub";
+    .ai-scribe-handle-icon {
+      font-size: 20px;
     }
 
     .ai-scribe-content {
-      position: absolute;
-      left: 40px;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      overflow-y: auto;
-      background: white;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: #1a1b1e;
     }
 
     .ai-scribe-header {
       padding: 16px;
-      font-size: 18px;
-      font-weight: 600;
-      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #2d2e32;
+    }
+
+    .ai-scribe-version {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .ai-scribe-close {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
     }
 
     .ai-scribe-nav {
+      flex: 1;
       padding: 8px;
+      overflow-y: auto;
     }
 
     .ai-scribe-nav-item {
@@ -106,7 +143,7 @@ const createMobileSidebar = () => {
       padding: 12px;
       border: none;
       background: none;
-      color: #333;
+      color: #fff;
       cursor: pointer;
       font-size: 14px;
       text-align: left;
@@ -115,11 +152,30 @@ const createMobileSidebar = () => {
     }
 
     .ai-scribe-nav-item:hover {
-      background: #f5f5f5;
+      background: #2d2e32;
     }
 
-    .ai-scribe-nav-item svg {
-      flex-shrink: 0;
+    .ai-scribe-icon {
+      font-size: 18px;
+    }
+
+    .ai-scribe-footer {
+      padding: 16px;
+      border-top: 1px solid #2d2e32;
+    }
+
+    .ai-scribe-input {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #2d2e32;
+      background: #2d2e32;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .ai-scribe-input::placeholder {
+      color: #9ca3af;
     }
 
     @media (min-width: 1024px) {
@@ -144,8 +200,14 @@ const createMobileSidebar = () => {
 
   // Toggle expanded state
   const handle = sidebar.querySelector('.ai-scribe-handle');
+  const closeBtn = sidebar.querySelector('.ai-scribe-close');
+  
   handle?.addEventListener('click', () => {
     sidebar.classList.toggle('expanded');
+  });
+
+  closeBtn?.addEventListener('click', () => {
+    sidebar.classList.remove('expanded');
   });
 };
 
