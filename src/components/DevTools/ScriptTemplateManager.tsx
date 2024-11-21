@@ -92,22 +92,27 @@ export const ScriptTemplateManager = () => {
               value={newTemplate.title}
               onChange={e => setNewTemplate(prev => ({ ...prev, title: e.target.value }))}
             />
-            <Input
-              placeholder="Category"
-              value={newTemplate.category}
-              onChange={e => setNewTemplate(prev => ({ ...prev, category: e.target.value }))}
-              icon={<Folder className="w-4 h-4" />}
-            />
+            <div className="flex items-center space-x-2">
+              <Folder className="w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Category"
+                value={newTemplate.category}
+                onChange={e => setNewTemplate(prev => ({ ...prev, category: e.target.value }))}
+              />
+            </div>
           </div>
           <div className="flex gap-2">
-            <Input
-              placeholder="Add tag"
-              value={newTag}
-              onChange={e => setNewTag(e.target.value)}
-              onKeyPress={e => e.key === "Enter" && handleAddTag()}
-            />
+            <div className="flex-1 flex items-center space-x-2">
+              <Tag className="w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Add tag"
+                value={newTag}
+                onChange={e => setNewTag(e.target.value)}
+                onKeyPress={e => e.key === "Enter" && handleAddTag()}
+              />
+            </div>
             <Button onClick={handleAddTag} variant="outline">
-              <Tag className="w-4 h-4 mr-2" />
+              <Plus className="w-4 h-4 mr-2" />
               Add Tag
             </Button>
           </div>

@@ -29,4 +29,6 @@ export interface UserScript {
     updated_at: string;
     editor: string;
   }[];
+  category?: string;
+  tags?: string[];
 }
