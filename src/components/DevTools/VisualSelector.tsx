@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Crosshair, Save, Search } from "lucide-react";
+import { Crosshair, Save, Search, Code } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { ElementHighlighter } from "./VisualSelector/ElementHighlighter";
@@ -90,6 +90,38 @@ export const VisualSelector = () => {
     }
   };
 
+  const createScriptTemplate = async () => {
+    if (!selectedElement) {
+      toast.error("No element selected");
+      return;
+    }
+
+    try {
+      const scriptContent = `// Script template for interacting with ${selectedElement.element_type} element
+const element = document.querySelector("${selectedElement.selector}");
+if (element) {
+  // Add your interaction code here
+  console.log("Element found:", element);
+} else {
+  console.error("Element not found");
+}`;
+
+      const { error } = await supabase.from("script_templates").insert({
+        title: `Interact with ${selectedElement.element_type}`,
+        description: description || `Template for interacting with ${selectedElement.element_type} element`,
+        content: scriptContent,
+        category: "Element Interaction",
+        tags: ["selector", selectedElement.element_type],
+      });
+
+      if (error) throw error;
+      toast.success("Script template created successfully");
+    } catch (error) {
+      toast.error("Failed to create script template");
+      console.error(error);
+    }
+  };
+
   return (
     <Card className="p-4 space-y-4">
       <div className="flex items-center gap-4">
@@ -111,22 +143,28 @@ export const VisualSelector = () => {
             Find Element
           </Button>
         </div>
-        {selectedElement && (
-          <Button onClick={saveSelector}>
-            <Save className="w-4 h-4 mr-2" />
-            Save Selector
-          </Button>
-        )}
       </div>
 
       <ElementHighlighter isActive={isSelecting} onElementSelect={handleElementSelect} />
 
       {selectedElement && (
-        <SelectorPreview
-          selector={selectedElement.selector}
-          elementType={selectedElement.element_type}
-          attributes={selectedElement.attributes}
-        />
+        <>
+          <SelectorPreview
+            selector={selectedElement.selector}
+            elementType={selectedElement.element_type}
+            attributes={selectedElement.attributes}
+          />
+          <div className="flex gap-2">
+            <Button onClick={saveSelector}>
+              <Save className="w-4 h-4 mr-2" />
+              Save Selector
+            </Button>
+            <Button onClick={createScriptTemplate} variant="outline">
+              <Code className="w-4 h-4 mr-2" />
+              Create Script Template
+            </Button>
+          </div>
+        </>
       )}
     </Card>
   );

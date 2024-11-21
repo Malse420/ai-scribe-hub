@@ -10,7 +10,7 @@ interface SelectorPreviewProps {
 
 export const SelectorPreview = ({ selector, elementType, attributes }: SelectorPreviewProps) => {
   return (
-    <Card className="mt-4">
+    <Card>
       <CardHeader>
         <CardTitle className="text-sm font-medium">Element Details</CardTitle>
       </CardHeader>
