@@ -122,34 +122,43 @@ export type Database = {
       }
       element_selectors: {
         Row: {
+          confidence_score: number | null
           created_at: string | null
           description: string | null
           element_type: string
           id: string
           last_used_at: string | null
           metadata: Json | null
+          nlp_context: Json | null
+          nlp_description: string | null
           selector: string
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          confidence_score?: number | null
           created_at?: string | null
           description?: string | null
           element_type: string
           id?: string
           last_used_at?: string | null
           metadata?: Json | null
+          nlp_context?: Json | null
+          nlp_description?: string | null
           selector: string
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          confidence_score?: number | null
           created_at?: string | null
           description?: string | null
           element_type?: string
           id?: string
           last_used_at?: string | null
           metadata?: Json | null
+          nlp_context?: Json | null
+          nlp_description?: string | null
           selector?: string
           updated_at?: string | null
           user_id?: string
