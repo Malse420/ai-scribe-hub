@@ -10,28 +10,33 @@ export const extractPageSource = () => {
       const rules = Array.from(sheet.cssRules);
       css += rules.map(rule => rule.cssText).join("\n");
     } catch (e) {
-      // Skip external stylesheets due to CORS
       console.warn("Could not access stylesheet:", e);
     }
   });
 
-  // Extract all JavaScript
+  // Extract all JavaScript including external scripts
   const scripts = Array.from(document.scripts);
-  const javascript = scripts
-    .filter(script => !script.src) // Only inline scripts
+  const inlineScripts = scripts
+    .filter(script => !script.src)
     .map(script => script.text)
     .join("\n\n");
+
+  const externalScripts = scripts
+    .filter(script => script.src)
+    .map(script => script.src);
 
   return {
     html: formatCode(html, "html"),
     css: formatCode(css, "css"),
-    javascript: formatCode(javascript, "javascript")
+    javascript: formatCode(inlineScripts, "javascript"),
+    externalScripts,
+    url: window.location.href,
+    title: document.title
   };
 };
 
 const formatCode = (code: string, language: string): string => {
   try {
-    // Basic formatting - you could add a proper formatter library if needed
     return code
       .split("\n")
       .map(line => line.trim())

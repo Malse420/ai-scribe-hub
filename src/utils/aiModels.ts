@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { getApiKey } from "./apiKeys";
+import { extractPageSource } from "./sourceExtractor";
 
 interface AIModelResponse {
   result: string;
@@ -16,8 +17,32 @@ export const generateWithAI = async (
     throw new Error('Hugging Face API key is required');
   }
 
+  // Extract page source and context
+  const pageContext = extractPageSource();
+  const contextPrompt = `
+Current webpage context:
+URL: ${pageContext.url}
+Title: ${pageContext.title}
+
+HTML Structure:
+${pageContext.html}
+
+Active Scripts:
+${pageContext.javascript}
+
+External Scripts:
+${pageContext.externalScripts.join('\n')}
+
+User Query:
+${prompt}
+`;
+
   const { data, error } = await supabase.functions.invoke('ai-model-handler', {
-    body: { prompt, task, huggingFaceToken },
+    body: { 
+      prompt: contextPrompt,
+      task,
+      huggingFaceToken
+    },
   });
 
   if (error) {
