@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Crosshair, Save, Search, Code } from "lucide-react";
+import { Crosshair, Save, Search, Code, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { ElementHighlighter } from "./VisualSelector/ElementHighlighter";
@@ -24,22 +24,28 @@ export const VisualSelector = () => {
   const { processQuery } = useAIAssistant();
 
   const handleElementSelect = useCallback(async (element: HTMLElement) => {
-    const selector = await processQuery(`Generate a robust CSS selector for this element: ${element.outerHTML}`);
-    const attributes = Array.from(element.attributes).reduce(
-      (acc, attr) => ({ ...acc, [attr.name]: attr.value }),
-      {}
-    );
+    try {
+      const selector = await processQuery(`Generate a robust CSS selector for this element: ${element.outerHTML}`);
+      const attributes = Array.from(element.attributes).reduce(
+        (acc, attr) => ({ ...acc, [attr.name]: attr.value }),
+        {}
+      );
 
-    setSelectedElement({
-      selector,
-      element_type: element.tagName.toLowerCase(),
-      attributes,
-    });
-    setIsSelecting(false);
+      setSelectedElement({
+        selector,
+        element_type: element.tagName.toLowerCase(),
+        attributes,
+      });
+      setIsSelecting(false);
 
-    // Get explanation from AI
-    const explanation = await processQuery(`Explain this element's role and attributes: ${element.outerHTML}`);
-    toast.info(explanation);
+      // Get explanation from AI
+      const explanation = await processQuery(`Explain this element's role and attributes: ${element.outerHTML}`);
+      toast.success("Element selected successfully");
+      toast.info(explanation);
+    } catch (error) {
+      toast.error("Failed to process element selection");
+      console.error(error);
+    }
   }, [processQuery]);
 
   const handleSearch = async () => {
@@ -124,21 +130,23 @@ if (element) {
 
   return (
     <Card className="p-4 space-y-4">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
         <Button
           onClick={() => setIsSelecting(!isSelecting)}
           variant={isSelecting ? "destructive" : "default"}
+          className="w-full md:w-auto"
         >
           <Crosshair className="w-4 h-4 mr-2" />
           {isSelecting ? "Cancel Selection" : "Select Element"}
         </Button>
-        <div className="flex-1 flex gap-2">
+        <div className="flex-1 flex flex-col md:flex-row gap-2 w-full">
           <Input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe the element (e.g., 'main search button in the header')"
+            className="flex-1"
           />
-          <Button onClick={handleSearch} variant="outline">
+          <Button onClick={handleSearch} variant="outline" className="w-full md:w-auto">
             <Search className="w-4 h-4 mr-2" />
             Find Element
           </Button>
@@ -154,12 +162,12 @@ if (element) {
             elementType={selectedElement.element_type}
             attributes={selectedElement.attributes}
           />
-          <div className="flex gap-2">
-            <Button onClick={saveSelector}>
+          <div className="flex flex-col md:flex-row gap-2">
+            <Button onClick={saveSelector} className="w-full md:w-auto">
               <Save className="w-4 h-4 mr-2" />
               Save Selector
             </Button>
-            <Button onClick={createScriptTemplate} variant="outline">
+            <Button onClick={createScriptTemplate} variant="outline" className="w-full md:w-auto">
               <Code className="w-4 h-4 mr-2" />
               Create Script Template
             </Button>
