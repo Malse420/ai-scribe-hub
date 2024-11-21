@@ -1,7 +1,11 @@
-const fs = require('fs');
-const path = require('path');
-const archiver = require('archiver');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import archiver from 'archiver';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Create dist directory if it doesn't exist
 const distDir = path.resolve(__dirname, '../dist');
