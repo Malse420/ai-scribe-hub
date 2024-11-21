@@ -22,8 +22,15 @@ export const ElementHighlighter = ({ isActive, onElementSelect }: ElementHighlig
     // Space to toggle persistent highlight
     if (e.key === " ") {
       e.preventDefault();
-      setPersistentHighlight(prev => prev ? null : highlightedElement);
-      toast.info(prev => prev ? "Highlight removed" : "Highlight locked");
+      setPersistentHighlight(prev => {
+        if (prev) {
+          toast.info("Highlight removed");
+          return null;
+        } else {
+          toast.info("Highlight locked");
+          return highlightedElement;
+        }
+      });
     }
 
     // Arrow keys to navigate DOM

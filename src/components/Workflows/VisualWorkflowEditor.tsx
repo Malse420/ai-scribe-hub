@@ -25,7 +25,7 @@ export const VisualWorkflowEditor = ({ workflowId }: { workflowId: string }) => 
   const [connections, setConnections] = useState<Connection[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
-  const canvasRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const { data: workflowSteps } = useQuery({
     queryKey: ["workflow-steps", workflowId],
