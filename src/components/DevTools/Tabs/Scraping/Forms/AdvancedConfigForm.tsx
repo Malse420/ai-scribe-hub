@@ -2,8 +2,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Wand2 } from "lucide-react";
-import { ScrapingConfig } from "@/utils/scraping";
+import { ScrapingConfig } from "@/utils/scraping/types";
+import { toast } from "sonner";
 
 interface AdvancedConfigFormProps {
   config: ScrapingConfig;
@@ -22,53 +24,161 @@ export const AdvancedConfigForm = ({ config, onConfigChange }: AdvancedConfigFor
         ]
       }
     });
+    toast.success("Added new dynamic selector");
   };
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label>Pagination</Label>
-        <Input
-          value={config.pagination?.nextButton}
-          onChange={(e) => onConfigChange({
-            ...config,
-            pagination: { ...config.pagination, nextButton: e.target.value }
-          })}
-          placeholder="Next button selector"
-        />
-        <div className="grid grid-cols-2 gap-2">
-          <Input
-            type="number"
-            min="1"
-            value={config.pagination?.maxPages}
-            onChange={(e) => onConfigChange({
-              ...config,
-              pagination: { ...config.pagination, maxPages: parseInt(e.target.value) }
-            })}
-            placeholder="Max pages"
-          />
-          <Input
-            type="number"
-            min="0"
-            value={config.pagination?.waitTime}
-            onChange={(e) => onConfigChange({
-              ...config,
-              pagination: { ...config.pagination, waitTime: parseInt(e.target.value) }
-            })}
-            placeholder="Wait time (ms)"
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label>Rate Limiting</Label>
+          <Switch
+            checked={config.rateLimit?.enabled}
+            onCheckedChange={(enabled) => 
+              onConfigChange({
+                ...config,
+                rateLimit: { ...config.rateLimit, enabled }
+              })
+            }
           />
         </div>
-        <Textarea
-          value={config.pagination?.stopCondition}
-          onChange={(e) => onConfigChange({
-            ...config,
-            pagination: { ...config.pagination, stopCondition: e.target.value }
-          })}
-          placeholder="Stop condition (JavaScript expression)"
-        />
+        
+        {config.rateLimit?.enabled && (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>Requests per minute</Label>
+              <Input
+                type="number"
+                min="1"
+                value={config.rateLimit?.requestsPerMinute}
+                onChange={(e) => onConfigChange({
+                  ...config,
+                  rateLimit: { 
+                    ...config.rateLimit,
+                    requestsPerMinute: parseInt(e.target.value)
+                  }
+                })}
+              />
+            </div>
+            <div>
+              <Label>Delay (ms)</Label>
+              <Input
+                type="number"
+                min="0"
+                value={config.rateLimit?.delayBetweenRequests}
+                onChange={(e) => onConfigChange({
+                  ...config,
+                  rateLimit: {
+                    ...config.rateLimit,
+                    delayBetweenRequests: parseInt(e.target.value)
+                  }
+                })}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label>Recursive Scraping</Label>
+          <Switch
+            checked={config.recursive?.enabled}
+            onCheckedChange={(enabled) => 
+              onConfigChange({
+                ...config,
+                recursive: { ...config.recursive, enabled }
+              })
+            }
+          />
+        </div>
+        
+        {config.recursive?.enabled && (
+          <div className="space-y-4">
+            <div>
+              <Label>Child Selector</Label>
+              <Input
+                value={config.recursive?.childSelector}
+                onChange={(e) => onConfigChange({
+                  ...config,
+                  recursive: {
+                    ...config.recursive,
+                    childSelector: e.target.value
+                  }
+                })}
+                placeholder="CSS selector for child elements"
+              />
+            </div>
+            <div>
+              <Label>Max Depth</Label>
+              <Input
+                type="number"
+                min="1"
+                value={config.recursive?.maxDepth}
+                onChange={(e) => onConfigChange({
+                  ...config,
+                  recursive: {
+                    ...config.recursive,
+                    maxDepth: parseInt(e.target.value)
+                  }
+                })}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label>Retry Configuration</Label>
+          <Switch
+            checked={config.retry?.enabled}
+            onCheckedChange={(enabled) => 
+              onConfigChange({
+                ...config,
+                retry: { ...config.retry, enabled }
+              })
+            }
+          />
+        </div>
+        
+        {config.retry?.enabled && (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>Max Retries</Label>
+              <Input
+                type="number"
+                min="1"
+                value={config.retry?.maxRetries}
+                onChange={(e) => onConfigChange({
+                  ...config,
+                  retry: {
+                    ...config.retry,
+                    maxRetries: parseInt(e.target.value)
+                  }
+                })}
+              />
+            </div>
+            <div>
+              <Label>Initial Delay (ms)</Label>
+              <Input
+                type="number"
+                min="0"
+                value={config.retry?.initialDelay}
+                onChange={(e) => onConfigChange({
+                  ...config,
+                  retry: {
+                    ...config.retry,
+                    initialDelay: parseInt(e.target.value)
+                  }
+                })}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <Label>Dynamic Selectors</Label>
           <Button variant="outline" size="sm" onClick={addDynamicSelector}>

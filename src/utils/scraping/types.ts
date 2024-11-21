@@ -29,6 +29,25 @@ export interface ScrapingConfig {
     format?: Record<string, string>;
     custom?: string;
   };
+  rateLimit?: {
+    enabled: boolean;
+    requestsPerMinute: number;
+    delayBetweenRequests: number;
+    maxConcurrent?: number;
+  };
+  recursive?: {
+    enabled: boolean;
+    childSelector?: string;
+    maxDepth?: number;
+    aggregateResults?: boolean;
+  };
+  retry?: {
+    enabled: boolean;
+    maxRetries: number;
+    backoffFactor?: number;
+    initialDelay: number;
+    maxDelay?: number;
+  };
 }
 
 export interface ScrapedData {
