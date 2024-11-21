@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { UserScript } from "@/types/script";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 const generateScriptId = () => Math.random().toString(36).substr(2, 9);
 

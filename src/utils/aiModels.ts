@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { getApiKey } from "./apiKeys";
 import { extractPageSource } from "./sourceExtractor";
 import { getAIAssistantSettings } from "./aiAssistantSettings";

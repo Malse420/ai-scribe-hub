@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { VersionHistoryHeader } from "./VersionHistoryHeader";
 import { VersionHistoryList } from "./VersionHistoryList";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { UserScript } from "@/types/script";
 import { toast } from "sonner";
 
