@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Save } from "lucide-react";
@@ -14,9 +14,18 @@ interface WorkflowStep {
   connections: string[];
 }
 
+interface Connection {
+  from: string;
+  to: string;
+}
+
 export const VisualWorkflowEditor = ({ workflowId }: { workflowId: string }) => {
   const [steps, setSteps] = useState<WorkflowStep[]>([]);
   const [selectedStep, setSelectedStep] = useState<string | null>(null);
+  const [connections, setConnections] = useState<Connection[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   const { data: workflowSteps } = useQuery({
     queryKey: ["workflow-steps", workflowId],
@@ -49,9 +58,45 @@ export const VisualWorkflowEditor = ({ workflowId }: { workflowId: string }) => 
     },
   });
 
+  const drawConnections = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#8B5CF6";
+    ctx.lineWidth = 2;
+
+    connections.forEach(({ from, to }) => {
+      const fromStep = workflowSteps?.find(step => step.id === from);
+      const toStep = workflowSteps?.find(step => step.id === to);
+
+      if (fromStep && toStep) {
+        const fromPos = fromStep.visual_position;
+        const toPos = toStep.visual_position;
+
+        ctx.beginPath();
+        ctx.moveTo(fromPos.x + 100, fromPos.y + 30);
+        ctx.bezierCurveTo(
+          fromPos.x + 150, fromPos.y + 30,
+          toPos.x - 50, toPos.y + 30,
+          toPos.x, toPos.y + 30
+        );
+        ctx.stroke();
+      }
+    });
+  }, [connections, workflowSteps]);
+
+  useEffect(() => {
+    drawConnections();
+  }, [drawConnections]);
+
   const handleDragStep = useCallback((stepId: string, position: { x: number; y: number }) => {
     updateStepPosition.mutate({ stepId, position });
-  }, []);
+    drawConnections();
+  }, [updateStepPosition, drawConnections]);
 
   return (
     <Card className="p-4 h-[600px] relative">
@@ -72,7 +117,14 @@ export const VisualWorkflowEditor = ({ workflowId }: { workflowId: string }) => 
         </Button>
       </div>
 
-      <div className="relative h-full border rounded-lg">
+      <div className="relative h-full border rounded-lg overflow-hidden">
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 pointer-events-none"
+          width={800}
+          height={600}
+        />
+        
         {workflowSteps?.map((step) => (
           <div
             key={step.id}
@@ -82,17 +134,26 @@ export const VisualWorkflowEditor = ({ workflowId }: { workflowId: string }) => 
             style={{
               left: step.visual_position.x,
               top: step.visual_position.y,
+              zIndex: selectedStep === step.id ? 10 : 1,
             }}
             onClick={() => setSelectedStep(step.id)}
-            draggable
-            onDragEnd={(e) => {
-              const rect = e.currentTarget.parentElement?.getBoundingClientRect();
-              if (rect) {
-                handleDragStep(step.id, {
-                  x: e.clientX - rect.left,
-                  y: e.clientY - rect.top,
-                });
+            onMouseDown={(e) => {
+              setIsDragging(true);
+              setDragStart({
+                x: e.clientX - step.visual_position.x,
+                y: e.clientY - step.visual_position.y,
+              });
+            }}
+            onMouseMove={(e) => {
+              if (isDragging && dragStart) {
+                const newX = e.clientX - dragStart.x;
+                const newY = e.clientY - dragStart.y;
+                handleDragStep(step.id, { x: newX, y: newY });
               }
+            }}
+            onMouseUp={() => {
+              setIsDragging(false);
+              setDragStart(null);
             }}
           >
             <h3 className="font-medium">{step.step_type}</h3>
