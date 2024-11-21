@@ -1,12 +1,15 @@
-.PHONY: build clean dev
+.PHONY: build clean dev install
 
-build: clean
+build: install clean
 	npm run build
 	node scripts/build-extension.js
 
-dev:
+dev: install
 	npm run dev
 
 clean:
 	rm -rf dist
 	rm -f dist.zip
+
+install:
+	npm install
