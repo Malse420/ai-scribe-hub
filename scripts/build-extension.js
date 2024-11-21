@@ -3,10 +3,6 @@ const path = require('path');
 const archiver = require('archiver');
 const { execSync } = require('child_process');
 
-// Build the project
-console.log('Building project...');
-execSync('npm run build', { stdio: 'inherit' });
-
 // Create dist directory if it doesn't exist
 const distDir = path.resolve(__dirname, '../dist');
 if (!fs.existsSync(distDir)) {

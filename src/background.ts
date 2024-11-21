@@ -1,3 +1,4 @@
+/// <reference types="chrome"/>
 import { supabase } from "./lib/supabase";
 
 // Listen for messages from content script
