@@ -6,12 +6,31 @@ export interface ScrapingConfig {
   pagination?: {
     nextButton: string;
     maxPages: number;
+    waitTime?: number;
+    stopCondition?: string;
   };
   filters?: {
     field: string;
     operator: 'equals' | 'contains' | 'greater' | 'less';
     value: string | number;
   }[];
+  transformation?: {
+    type: 'map' | 'filter' | 'reduce';
+    function: string;
+  };
+  dynamicSelectors?: {
+    parentSelector: string;
+    childSelectors: {
+      name: string;
+      selector: string;
+      attribute?: string;
+    }[];
+  };
+  validation?: {
+    required?: string[];
+    format?: Record<string, string>;
+    custom?: string;
+  };
 }
 
 export interface ScrapedData {
@@ -21,18 +40,80 @@ export interface ScrapedData {
   metadata?: Record<string, any>;
 }
 
-const extractElementData = (element: Element, attributes?: string[]) => {
+const extractElementData = (element: Element, config: ScrapingConfig) => {
   const result: Record<string, any> = {
     text: element.textContent?.trim(),
   };
   
-  if (attributes) {
-    attributes.forEach(attr => {
+  if (config.attributes) {
+    config.attributes.forEach(attr => {
       result[attr] = element.getAttribute(attr);
+    });
+  }
+
+  if (config.dynamicSelectors) {
+    config.dynamicSelectors.childSelectors.forEach(({ name, selector, attribute }) => {
+      const childElement = element.querySelector(selector);
+      result[name] = attribute 
+        ? childElement?.getAttribute(attribute)
+        : childElement?.textContent?.trim();
     });
   }
   
   return result;
+};
+
+const validateData = (data: Record<string, any>, validation?: ScrapingConfig['validation']) => {
+  if (!validation) return true;
+
+  if (validation.required) {
+    const missingFields = validation.required.filter(field => !data[field]);
+    if (missingFields.length > 0) {
+      console.warn(`Missing required fields: ${missingFields.join(', ')}`);
+      return false;
+    }
+  }
+
+  if (validation.format) {
+    for (const [field, format] of Object.entries(validation.format)) {
+      if (data[field] && !new RegExp(format).test(data[field])) {
+        console.warn(`Field ${field} does not match required format`);
+        return false;
+      }
+    }
+  }
+
+  if (validation.custom) {
+    try {
+      return new Function('data', `return ${validation.custom}`)(data);
+    } catch (error) {
+      console.error('Custom validation error:', error);
+      return false;
+    }
+  }
+
+  return true;
+};
+
+const transformData = (data: Record<string, any>[], transformation?: ScrapingConfig['transformation']) => {
+  if (!transformation) return data;
+
+  try {
+    const fn = new Function('data', `return ${transformation.function}`);
+    switch (transformation.type) {
+      case 'map':
+        return data.map(item => fn(item));
+      case 'filter':
+        return data.filter(item => fn(item));
+      case 'reduce':
+        return [fn(data)];
+      default:
+        return data;
+    }
+  } catch (error) {
+    console.error('Transformation error:', error);
+    return data;
+  }
 };
 
 const applyFilters = (data: Record<string, any>[], filters?: ScrapingConfig['filters']) => {
@@ -61,11 +142,23 @@ export const scrapeData = async (config: ScrapingConfig): Promise<ScrapedData> =
   try {
     let allData: Record<string, any>[] = [];
     let currentPage = 1;
+    let shouldContinue = true;
     
     const scrapeCurrentPage = () => {
       const elements = Array.from(document.querySelectorAll(config.selector));
-      const pageData = elements.map(el => extractElementData(el, config.attributes));
+      const pageData = elements
+        .map(el => extractElementData(el, config))
+        .filter(data => validateData(data, config.validation));
       allData = [...allData, ...pageData];
+
+      if (config.pagination?.stopCondition) {
+        try {
+          shouldContinue = new Function('data', `return ${config.pagination.stopCondition}`)(pageData);
+        } catch (error) {
+          console.error('Stop condition error:', error);
+          shouldContinue = false;
+        }
+      }
     };
 
     // Initial scrape
@@ -73,27 +166,30 @@ export const scrapeData = async (config: ScrapingConfig): Promise<ScrapedData> =
 
     // Handle pagination if configured
     if (config.pagination?.nextButton && config.pagination.maxPages > 1) {
-      while (currentPage < config.pagination.maxPages) {
+      while (currentPage < config.pagination.maxPages && shouldContinue) {
         const nextButton = document.querySelector(config.pagination.nextButton) as HTMLElement;
         if (!nextButton) break;
 
         nextButton.click();
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for content to load
+        await new Promise(resolve => 
+          setTimeout(resolve, config.pagination?.waitTime || 1000)
+        );
         scrapeCurrentPage();
         currentPage++;
       }
     }
 
-    // Apply filters
-    const filteredData = applyFilters(allData, config.filters);
+    // Apply transformations and filters
+    let processedData = transformData(allData, config.transformation);
+    processedData = applyFilters(processedData, config.filters);
 
     return {
-      elements: filteredData,
+      elements: processedData,
       timestamp: new Date().toISOString(),
       url: window.location.href,
       metadata: {
         totalPages: currentPage,
-        totalElements: filteredData.length,
+        totalElements: processedData.length,
         config
       }
     };
