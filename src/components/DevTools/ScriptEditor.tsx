@@ -8,6 +8,8 @@ import { editor } from "monaco-editor";
 import ScriptVersionHistory from "./ScriptVersionHistory";
 import ScriptEditorHeader from "./ScriptEditorHeader";
 import ScriptEditorContent from "./ScriptEditorContent";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 
 interface ScriptEditorProps {
   initialScript?: UserScript;
@@ -31,19 +33,55 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
   const [newCollaboratorEmail, setNewCollaboratorEmail] = useState("");
   const { collaborators, addCollaborator, removeCollaborator } = useScriptCollaboration(script.id);
 
-  const handleSave = () => {
+  const updatePermissions = useMutation({
+    mutationFn: async (permissions: { read: string[]; write: string[]; admin: string[] }) => {
+      const { error } = await supabase
+        .from("userscripts")
+        .update({ permissions })
+        .eq("id", script.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Permissions updated successfully");
+    },
+    onError: () => {
+      toast.error("Failed to update permissions");
+    },
+  });
+
+  const logAuditEvent = async (action: string, details: any) => {
+    const { error } = await supabase
+      .from("userscripts")
+      .update({
+        audit_log: [...(script.audit_log || []), {
+          action,
+          timestamp: new Date().toISOString(),
+          details,
+        }],
+      })
+      .eq("id", script.id);
+
+    if (error) {
+      console.error("Failed to log audit event:", error);
+    }
+  };
+
+  const handleSave = async () => {
     const updatedScript = {
       ...script,
       updated_at: new Date().toISOString(),
     };
-    saveScript(updatedScript);
+    await saveScript(updatedScript);
+    await logAuditEvent("save", { version: script.version });
     onSave?.(updatedScript);
     toast.success("Script saved successfully");
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (script.id) {
-      deleteScript(script.id);
+      await logAuditEvent("delete", {});
+      await deleteScript(script.id);
       onDelete?.(script.id);
       toast.success("Script deleted successfully");
     }
@@ -53,26 +91,6 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
     if (value !== undefined) {
       setScript((prev) => ({ ...prev, content: value }));
     }
-  };
-
-  const handleAddCollaborator = async () => {
-    if (!newCollaboratorEmail) {
-      toast.error("Please enter an email address");
-      return;
-    }
-    try {
-      await addCollaborator.mutateAsync(newCollaboratorEmail);
-      setNewCollaboratorEmail("");
-      toast.success("Collaborator added successfully");
-    } catch (error) {
-      toast.error("Failed to add collaborator");
-    }
-  };
-
-  const handleVersionSelect = (version: UserScript) => {
-    setScript(version);
-    setShowHistory(false);
-    toast.info("Viewing version " + version.version);
   };
 
   const editorOptions: editor.IStandaloneEditorConstructionOptions = {
@@ -91,10 +109,11 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
           collaborators={collaborators}
           newCollaboratorEmail={newCollaboratorEmail}
           setNewCollaboratorEmail={setNewCollaboratorEmail}
-          handleAddCollaborator={handleAddCollaborator}
+          handleAddCollaborator={addCollaborator}
           removeCollaborator={removeCollaborator}
           setShowHistory={setShowHistory}
           showHistory={showHistory}
+          updatePermissions={updatePermissions}
         />
         <ScriptEditorContent
           script={script}
@@ -109,7 +128,11 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
         <div className="lg:col-span-1">
           <ScriptVersionHistory
             scriptId={script.id}
-            onVersionSelect={handleVersionSelect}
+            onVersionSelect={(version) => {
+              setScript(version);
+              setShowHistory(false);
+              toast.info("Viewing version " + version.version);
+            }}
           />
         </div>
       )}
