@@ -180,6 +180,45 @@ export type Database = {
         }
         Relationships: []
       }
+      script_templates: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_public: boolean | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       shared_resources: {
         Row: {
           created_at: string | null
@@ -249,6 +288,7 @@ export type Database = {
       userscripts: {
         Row: {
           audit_log: Json | null
+          category: string | null
           collaborators: Json | null
           content: string
           created_at: string | null
@@ -259,6 +299,7 @@ export type Database = {
           parent_version_id: string | null
           permissions: Json | null
           shared_with: Json | null
+          tags: string[] | null
           title: string
           updated_at: string | null
           user_id: string
@@ -266,6 +307,7 @@ export type Database = {
         }
         Insert: {
           audit_log?: Json | null
+          category?: string | null
           collaborators?: Json | null
           content: string
           created_at?: string | null
@@ -276,6 +318,7 @@ export type Database = {
           parent_version_id?: string | null
           permissions?: Json | null
           shared_with?: Json | null
+          tags?: string[] | null
           title: string
           updated_at?: string | null
           user_id: string
@@ -283,6 +326,7 @@ export type Database = {
         }
         Update: {
           audit_log?: Json | null
+          category?: string | null
           collaborators?: Json | null
           content?: string
           created_at?: string | null
@@ -293,6 +337,7 @@ export type Database = {
           parent_version_id?: string | null
           permissions?: Json | null
           shared_with?: Json | null
+          tags?: string[] | null
           title?: string
           updated_at?: string | null
           user_id?: string
