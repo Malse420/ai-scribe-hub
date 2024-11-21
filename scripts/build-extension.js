@@ -13,33 +13,36 @@ if (!fs.existsSync(distDir)) {
   fs.mkdirSync(distDir);
 }
 
+// Copy manifest.json and icons to dist directory
+const publicDir = path.resolve(__dirname, '../public');
+const filesToCopy = ['manifest.json', 'icon16.png', 'icon48.png', 'icon128.png'];
+
+filesToCopy.forEach(file => {
+  const sourcePath = path.join(publicDir, file);
+  const destPath = path.join(distDir, file);
+  if (fs.existsSync(sourcePath)) {
+    fs.copyFileSync(sourcePath, destPath);
+    console.log(`Copied ${file} to dist directory`);
+  } else {
+    console.warn(`Warning: ${file} not found in public directory`);
+  }
+});
+
 // Create a zip file
-const output = fs.createWriteStream(path.resolve(distDir, 'extension.zip'));
+const output = fs.createWriteStream(path.join(__dirname, '../dist.zip'));
 const archive = archiver('zip', {
   zlib: { level: 9 }
 });
 
 output.on('close', () => {
   console.log('Extension package created successfully!');
-  console.log('Total bytes:', archive.pointer());
+  console.log(`Total bytes: ${archive.pointer()}`);
 });
 
 archive.on('error', (err) => {
   throw err;
 });
 
-// Pipe archive data to the file
 archive.pipe(output);
-
-// Add the built files to the zip
-const buildDir = path.resolve(__dirname, '../dist');
-archive.directory(buildDir, false);
-
-// Add manifest and icons
-archive.file(path.resolve(__dirname, '../public/manifest.json'), { name: 'manifest.json' });
-archive.file(path.resolve(__dirname, '../public/icon16.png'), { name: 'icon16.png' });
-archive.file(path.resolve(__dirname, '../public/icon48.png'), { name: 'icon48.png' });
-archive.file(path.resolve(__dirname, '../public/icon128.png'), { name: 'icon128.png' });
-
-// Finalize the archive
+archive.directory(distDir, false);
 archive.finalize();
