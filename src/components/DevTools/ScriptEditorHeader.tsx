@@ -11,7 +11,7 @@ interface ScriptEditorHeaderProps {
   collaborators: Collaborator[];
   newCollaboratorEmail: string;
   setNewCollaboratorEmail: (email: string) => void;
-  handleAddCollaborator: () => void;
+  handleAddCollaborator: () => Promise<void> | void;
   removeCollaborator: (id: string) => Promise<void> | void;
   setShowHistory: (show: boolean) => void;
   showHistory: boolean;
