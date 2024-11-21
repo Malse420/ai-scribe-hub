@@ -1,3 +1,5 @@
+import { Json } from './common';
+
 export type AnalyticsRow = {
   id: string;
   user_id: string;
