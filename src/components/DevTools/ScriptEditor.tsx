@@ -26,12 +26,40 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
       version: 1,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      category: "",
+      tags: []
     }
   );
 
   const [showHistory, setShowHistory] = useState(false);
   const [newCollaboratorEmail, setNewCollaboratorEmail] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const { collaborators, addCollaborator, removeCollaborator } = useScriptCollaboration(script.id);
+
+  const { data: templates } = useQuery({
+    queryKey: ["script-templates"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("script_templates")
+        .select("*");
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const handleTemplateSelect = (templateId: string) => {
+    const template = templates?.find(t => t.id === templateId);
+    if (template) {
+      setScript(prev => ({
+        ...prev,
+        content: template.content,
+        category: template.category || prev.category,
+        tags: template.tags || prev.tags
+      }));
+      setSelectedTemplate(templateId);
+      toast.success("Template applied");
+    }
+  };
 
   const updatePermissions = useMutation({
     mutationFn: async (permissions: { read: string[]; write: string[]; admin: string[] }) => {
@@ -122,6 +150,9 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
           setShowHistory={setShowHistory}
           showHistory={showHistory}
           updatePermissions={updatePermissions}
+          templates={templates}
+          onTemplateSelect={handleTemplateSelect}
+          selectedTemplate={selectedTemplate}
         />
         <ScriptEditorContent
           script={script}

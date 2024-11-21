@@ -3,7 +3,8 @@ import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, UserPlus, History, Trash } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Users, UserPlus, History, Trash, Folder } from "lucide-react";
 import { Collaborator } from "@/types/script";
 import { UseMutationResult } from "@tanstack/react-query";
 
@@ -16,6 +17,9 @@ interface ScriptEditorHeaderProps {
   setShowHistory: (show: boolean) => void;
   showHistory: boolean;
   updatePermissions: UseMutationResult<any, Error, { read: string[]; write: string[]; admin: string[] }>;
+  templates?: any[];
+  onTemplateSelect?: (templateId: string) => void;
+  selectedTemplate?: string | null;
 }
 
 const ScriptEditorHeader = ({
@@ -27,12 +31,32 @@ const ScriptEditorHeader = ({
   setShowHistory,
   showHistory,
   updatePermissions,
+  templates,
+  onTemplateSelect,
+  selectedTemplate
 }: ScriptEditorHeaderProps) => {
   return (
     <CardHeader>
       <div className="flex justify-between items-center">
         <CardTitle>Script Editor</CardTitle>
         <div className="flex gap-2">
+          {templates && onTemplateSelect && (
+            <Select value={selectedTemplate || ""} onValueChange={onTemplateSelect}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select template" />
+              </SelectTrigger>
+              <SelectContent>
+                {templates.map(template => (
+                  <SelectItem key={template.id} value={template.id}>
+                    <div className="flex items-center">
+                      <Folder className="w-4 h-4 mr-2" />
+                      {template.title}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
