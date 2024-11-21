@@ -21,73 +21,84 @@ export interface ScrapedData {
   metadata?: Record<string, any>;
 }
 
+const extractElementData = (element: Element, attributes?: string[]) => {
+  const result: Record<string, any> = {
+    text: element.textContent?.trim(),
+  };
+  
+  if (attributes) {
+    attributes.forEach(attr => {
+      result[attr] = element.getAttribute(attr);
+    });
+  }
+  
+  return result;
+};
+
+const applyFilters = (data: Record<string, any>[], filters?: ScrapingConfig['filters']) => {
+  if (!filters || filters.length === 0) return data;
+  
+  return data.filter(item => {
+    return filters.every(filter => {
+      const value = item[filter.field];
+      switch (filter.operator) {
+        case 'equals':
+          return value === filter.value;
+        case 'contains':
+          return String(value).includes(String(filter.value));
+        case 'greater':
+          return Number(value) > Number(filter.value);
+        case 'less':
+          return Number(value) < Number(filter.value);
+        default:
+          return true;
+      }
+    });
+  });
+};
+
 export const scrapeData = async (config: ScrapingConfig): Promise<ScrapedData> => {
   try {
-    const elements = Array.from(document.querySelectorAll(config.selector));
-    let data = elements.map(el => {
-      const result: Record<string, any> = {
-        text: el.textContent?.trim(),
-      };
-      
-      if (config.attributes) {
-        config.attributes.forEach(attr => {
-          result[attr] = el.getAttribute(attr);
-        });
-      }
-      
-      return result;
-    });
+    let allData: Record<string, any>[] = [];
+    let currentPage = 1;
+    
+    const scrapeCurrentPage = () => {
+      const elements = Array.from(document.querySelectorAll(config.selector));
+      const pageData = elements.map(el => extractElementData(el, config.attributes));
+      allData = [...allData, ...pageData];
+    };
 
-    // Apply filters if specified
-    if (config.filters) {
-      data = data.filter(item => {
-        return config.filters!.every(filter => {
-          const value = item[filter.field];
-          switch (filter.operator) {
-            case 'equals':
-              return value === filter.value;
-            case 'contains':
-              return String(value).includes(String(filter.value));
-            case 'greater':
-              return Number(value) > Number(filter.value);
-            case 'less':
-              return Number(value) < Number(filter.value);
-            default:
-              return true;
-          }
-        });
-      });
-    }
+    // Initial scrape
+    scrapeCurrentPage();
 
     // Handle pagination if configured
-    if (config.pagination) {
-      let currentPage = 1;
-      let nextButton = document.querySelector(config.pagination.nextButton);
-      
-      while (nextButton && currentPage < config.pagination.maxPages) {
-        (nextButton as HTMLElement).click();
+    if (config.pagination?.nextButton && config.pagination.maxPages > 1) {
+      while (currentPage < config.pagination.maxPages) {
+        const nextButton = document.querySelector(config.pagination.nextButton) as HTMLElement;
+        if (!nextButton) break;
+
+        nextButton.click();
         await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for content to load
-        
-        const newElements = Array.from(document.querySelectorAll(config.selector));
-        const newData = newElements.map(el => ({
-          text: el.textContent?.trim(),
-          ...(config.attributes && Object.fromEntries(
-            config.attributes.map(attr => [attr, el.getAttribute(attr)])
-          ))
-        }));
-        
-        data = [...data, ...newData];
+        scrapeCurrentPage();
         currentPage++;
-        nextButton = document.querySelector(config.pagination.nextButton);
       }
     }
 
+    // Apply filters
+    const filteredData = applyFilters(allData, config.filters);
+
     return {
-      elements: data,
+      elements: filteredData,
       timestamp: new Date().toISOString(),
       url: window.location.href,
+      metadata: {
+        totalPages: currentPage,
+        totalElements: filteredData.length,
+        config
+      }
     };
   } catch (error) {
+    console.error('Scraping error:', error);
     toast.error("Failed to scrape data");
     throw error;
   }
@@ -97,21 +108,47 @@ export const exportData = (data: ScrapedData, format: 'csv' | 'json' | 'xml'): s
   switch (format) {
     case 'json':
       return JSON.stringify(data, null, 2);
-    case 'csv':
+    
+    case 'csv': {
       const headers = Object.keys(data.elements[0] || {});
       const rows = data.elements.map(el => 
-        headers.map(header => el[header]).join(',')
+        headers.map(header => {
+          const value = el[header];
+          // Handle values that might contain commas
+          return typeof value === 'string' && value.includes(',') 
+            ? `"${value}"`
+            : value;
+        }).join(',')
       );
       return [headers.join(','), ...rows].join('\n');
-    case 'xml':
-      const xmlElements = data.elements.map(el => 
+    }
+    
+    case 'xml': {
+      const metadata = `
+        <metadata>
+          <timestamp>${data.timestamp}</timestamp>
+          <url>${data.url}</url>
+          <total_elements>${data.elements.length}</total_elements>
+        </metadata>
+      `;
+      
+      const elements = data.elements.map(el => 
         `<element>${
           Object.entries(el)
             .map(([key, value]) => `<${key}>${value}</${key}>`)
             .join('')
         }</element>`
-      ).join('');
-      return `<?xml version="1.0"?><data>${xmlElements}</data>`;
+      ).join('\n');
+      
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<data>
+  ${metadata}
+  <elements>
+    ${elements}
+  </elements>
+</data>`;
+    }
+    
     default:
       throw new Error('Unsupported format');
   }
@@ -127,4 +164,5 @@ export const downloadData = (data: string, filename: string): void => {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+  toast.success(`Downloaded ${filename}`);
 };

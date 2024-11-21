@@ -10,30 +10,40 @@ export const ElementHighlighter = ({ isActive, onElementSelect }: ElementHighlig
   const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
   const [persistentHighlight, setPersistentHighlight] = useState<HTMLElement | null>(null);
 
+  const clearHighlight = (element: HTMLElement) => {
+    element.style.removeProperty('outline');
+    element.style.removeProperty('background-color');
+  };
+
+  const setHighlight = (element: HTMLElement, isPersistent = false) => {
+    element.style.outline = '2px solid #8B5CF6';
+    element.style.backgroundColor = isPersistent ? 'rgba(139, 92, 246, 0.1)' : 'transparent';
+  };
+
   const handleKeyPress = useCallback((e: KeyboardEvent) => {
     if (!isActive || !highlightedElement) return;
 
-    // Enter to select
     if (e.key === "Enter") {
       onElementSelect(highlightedElement);
       toast.success("Element selected");
     }
 
-    // Space to toggle persistent highlight
     if (e.key === " ") {
       e.preventDefault();
       setPersistentHighlight((prev) => {
         if (prev) {
+          clearHighlight(prev);
           toast.info("Highlight removed");
           return null;
         } else {
+          setHighlight(highlightedElement, true);
           toast.info("Highlight locked");
           return highlightedElement;
         }
       });
     }
 
-    // Arrow keys to navigate DOM
+    // DOM Navigation
     if (e.key.startsWith("Arrow")) {
       e.preventDefault();
       let nextElement: HTMLElement | null = null;
@@ -54,9 +64,10 @@ export const ElementHighlighter = ({ isActive, onElementSelect }: ElementHighlig
       }
 
       if (nextElement) {
-        highlightedElement.style.outline = "";
-        nextElement.style.outline = "2px solid #8B5CF6";
+        clearHighlight(highlightedElement);
+        setHighlight(nextElement);
         setHighlightedElement(nextElement);
+        nextElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
     }
   }, [isActive, highlightedElement, onElementSelect]);
@@ -67,17 +78,17 @@ export const ElementHighlighter = ({ isActive, onElementSelect }: ElementHighlig
       const target = e.target as HTMLElement;
       
       if (highlightedElement) {
-        highlightedElement.style.outline = "";
+        clearHighlight(highlightedElement);
       }
       
-      target.style.outline = "2px solid #8B5CF6";
+      setHighlight(target);
       setHighlightedElement(target);
     };
 
     const handleMouseOut = (e: MouseEvent) => {
       if (!isActive || persistentHighlight) return;
       const target = e.target as HTMLElement;
-      target.style.outline = "";
+      clearHighlight(target);
     };
 
     const handleClick = (e: MouseEvent) => {
@@ -106,7 +117,7 @@ export const ElementHighlighter = ({ isActive, onElementSelect }: ElementHighlig
 
   useEffect(() => {
     if (!isActive && persistentHighlight) {
-      persistentHighlight.style.outline = "";
+      clearHighlight(persistentHighlight);
       setPersistentHighlight(null);
     }
   }, [isActive]);
