@@ -5,6 +5,7 @@ import { Save, Play, Trash } from "lucide-react";
 import Editor from "@monaco-editor/react";
 import { editor } from "monaco-editor";
 import { UserScript } from "@/types/script";
+import { toast } from "sonner";
 
 interface ScriptEditorContentProps {
   script: UserScript;
@@ -23,6 +24,18 @@ const ScriptEditorContent = ({
   handleEditorChange,
   editorOptions,
 }: ScriptEditorContentProps) => {
+  const handleRun = async () => {
+    try {
+      // Create a new Function from the script content
+      const scriptFunction = new Function(script.content);
+      await scriptFunction();
+      toast.success("Script executed successfully");
+    } catch (error) {
+      console.error("Script execution error:", error);
+      toast.error("Failed to execute script: " + (error as Error).message);
+    }
+  };
+
   return (
     <CardContent className="space-y-4">
       <Input
@@ -46,7 +59,7 @@ const ScriptEditorContent = ({
           <Trash className="w-4 h-4 mr-2" />
           Delete
         </Button>
-        <Button variant="outline">
+        <Button variant="outline" onClick={handleRun}>
           <Play className="w-4 h-4 mr-2" />
           Run
         </Button>

@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { VersionHistoryHeader } from "./VersionHistoryHeader";
 import { VersionHistoryList } from "./VersionHistoryList";
+import { AuditLogViewer } from "./AuditLogViewer";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { UserScript } from "@/types/script";
@@ -15,6 +17,7 @@ const ScriptVersionHistory = ({
   scriptId,
   onVersionSelect,
 }: ScriptVersionHistoryProps) => {
+  const [showAuditLog, setShowAuditLog] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: versions } = useQuery({
@@ -28,6 +31,20 @@ const ScriptVersionHistory = ({
 
       if (error) throw error;
       return data as UserScript[];
+    },
+  });
+
+  const { data: auditLog } = useQuery({
+    queryKey: ["script-audit-log", scriptId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("userscripts")
+        .select("audit_log")
+        .eq("id", scriptId)
+        .single();
+
+      if (error) throw error;
+      return data.audit_log || [];
     },
   });
 
@@ -56,13 +73,20 @@ const ScriptVersionHistory = ({
 
   return (
     <Card className="h-full">
-      <VersionHistoryHeader />
+      <VersionHistoryHeader 
+        showAuditLog={showAuditLog}
+        setShowAuditLog={setShowAuditLog}
+      />
       <CardContent>
-        <VersionHistoryList
-          versions={versions || []}
-          onVersionSelect={onVersionSelect}
-          onRollback={(version) => rollbackMutation.mutate(version)}
-        />
+        {showAuditLog ? (
+          <AuditLogViewer auditLog={auditLog || []} />
+        ) : (
+          <VersionHistoryList
+            versions={versions || []}
+            onVersionSelect={onVersionSelect}
+            onRollback={(version) => rollbackMutation.mutate(version)}
+          />
+        )}
       </CardContent>
     </Card>
   );
