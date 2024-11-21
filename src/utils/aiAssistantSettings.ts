@@ -13,7 +13,7 @@ const DEFAULT_SETTINGS: AIAssistantSettings = {
   includeInlineScripts: true,
   includeExternalScripts: false,
   includePageMetadata: true,
-  defaultModel: "gpt-4o-mini"
+  defaultModel: "gpt-4o"
 };
 
 export const getAIAssistantSettings = (): AIAssistantSettings => {

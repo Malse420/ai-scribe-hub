@@ -29,26 +29,35 @@ const AIAssistantSettings = () => {
         <div className="space-y-2">
           <Label htmlFor="defaultModel">Default AI Model</Label>
           <Select
-            value={settings.defaultModel || "gpt-4o-mini"}
+            value={settings.defaultModel || "gpt-4o"}
             onValueChange={(value) => handleChange("defaultModel", value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select a model" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="gpt-4o">OpenAI GPT-4 Optimized (Best Quality)</SelectItem>
-              <SelectItem value="gpt-4o-mini">OpenAI GPT-4 Mini (Fast)</SelectItem>
-              <SelectItem value="claude-3-opus">Anthropic Claude 3 Opus</SelectItem>
-              <SelectItem value="claude-3-sonnet">Anthropic Claude 3 Sonnet</SelectItem>
-              <SelectItem value="claude-3-haiku">Anthropic Claude 3 Haiku</SelectItem>
-              <SelectItem value="gemini-pro">Google Gemini Pro</SelectItem>
-              <SelectItem value="gemini-pro-vision">Google Gemini Pro Vision</SelectItem>
-              <SelectItem value="mixtral-8x7b">Mistral Mixtral 8x7B</SelectItem>
-              <SelectItem value="mistral-medium">Mistral Medium</SelectItem>
-              <SelectItem value="mistral-small">Mistral Small</SelectItem>
-              <SelectItem value="llama-2-70b">Meta Llama 2 70B</SelectItem>
-              <SelectItem value="llama-2-13b">Meta Llama 2 13B</SelectItem>
-              <SelectItem value="codellama-34b">Meta CodeLlama 34B</SelectItem>
+              <SelectItem value="gpt-4o">OpenAI GPT-4o (Most Powerful)</SelectItem>
+              <SelectItem value="o1-preview">OpenAI O1-Preview (Advanced)</SelectItem>
+              <SelectItem value="o1-mini">OpenAI O1-Mini (Fast)</SelectItem>
+              
+              <SelectItem value="gemini-1.5-pro">Google Gemini 1.5 Pro (Advanced)</SelectItem>
+              <SelectItem value="gemini-1.0-ultra">Google Gemini 1.0 Ultra (Powerful)</SelectItem>
+              <SelectItem value="gemini-1.0">Google Gemini 1.0 (Fast)</SelectItem>
+              
+              <SelectItem value="claude-3.5-sonnet">Anthropic Claude 3.5 Sonnet (Balanced)</SelectItem>
+              <SelectItem value="claude-3.5-haiku">Anthropic Claude 3.5 Haiku (Fast)</SelectItem>
+              <SelectItem value="claude-3.0-opus">Anthropic Claude 3.0 Opus (Powerful)</SelectItem>
+              
+              <SelectItem value="meta-llama-3.1-70b">Meta Llama 3.1 70B Instruct (Most Powerful)</SelectItem>
+              <SelectItem value="nvidia-llama-3.1-70b">NVIDIA Llama 3.1 Nemotron 70B (Advanced)</SelectItem>
+              <SelectItem value="llama-3.2-11b-vision">Meta Llama 3.2 11B Vision (Vision-capable)</SelectItem>
+              <SelectItem value="hermes-3-llama-3.1-8b">Nous Hermes 3 Llama 3.1 8B (Fast)</SelectItem>
+              <SelectItem value="mistral-nemo-2407">Mistral Nemo Instruct 2407 (Balanced)</SelectItem>
+              <SelectItem value="phi-3.5-mini">Microsoft Phi 3.5 Mini (Efficient)</SelectItem>
+              <SelectItem value="qwen-2.5-7b">Qwen 2.5 7B (Fast)</SelectItem>
+              <SelectItem value="qwen-2.5-14b">Qwen 2.5 14B (Balanced)</SelectItem>
+              <SelectItem value="qwen-2.5-32b">Qwen 2.5 32B (Advanced)</SelectItem>
+              <SelectItem value="qwen-2.5-72b">Qwen 2.5 72B (Most Powerful)</SelectItem>
             </SelectContent>
           </Select>
         </div>
