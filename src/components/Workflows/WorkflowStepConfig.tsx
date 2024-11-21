@@ -3,14 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { toast } from "sonner";
+
+type BackoffStrategy = "linear" | "exponential";
 
 interface WorkflowStepConfigProps {
   stepId: string;
   config: {
     retries: number;
-    backoff: "linear" | "exponential";
+    backoff: BackoffStrategy;
     conditions: Array<{
       field: string;
       operator: string;
@@ -22,7 +24,7 @@ interface WorkflowStepConfigProps {
 
 export const WorkflowStepConfig = ({ stepId, config, onUpdate }: WorkflowStepConfigProps) => {
   const [retries, setRetries] = useState(config.retries || 0);
-  const [backoff, setBackoff] = useState(config.backoff || "linear");
+  const [backoff, setBackoff] = useState<BackoffStrategy>(config.backoff || "linear");
   const [conditions, setConditions] = useState(config.conditions || []);
 
   const handleSave = () => {
@@ -69,7 +71,7 @@ export const WorkflowStepConfig = ({ stepId, config, onUpdate }: WorkflowStepCon
 
           <div>
             <label className="text-sm font-medium">Backoff Strategy</label>
-            <Select value={backoff} onValueChange={setBackoff}>
+            <Select value={backoff} onValueChange={(value: BackoffStrategy) => setBackoff(value)}>
               <SelectTrigger className="mt-1">
                 <SelectValue />
               </SelectTrigger>
