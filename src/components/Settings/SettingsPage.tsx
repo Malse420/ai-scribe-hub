@@ -43,16 +43,6 @@ const SettingsPage = () => {
           <h3 className="text-lg font-medium">AI Preferences</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Default AI Model
-              </label>
-              <select className="w-full p-2 border border-neutral-200 rounded-lg">
-                <option>GPT-4</option>
-                <option>Claude</option>
-                <option>Gemini</option>
-              </select>
-            </div>
-            <div>
               <label className="flex items-center space-x-2">
                 <input type="checkbox" className="rounded border-neutral-300" />
                 <span className="text-sm">Enable AI suggestions</span>
