@@ -22,7 +22,7 @@ export const ElementHighlighter = ({ isActive, onElementSelect }: ElementHighlig
     // Space to toggle persistent highlight
     if (e.key === " ") {
       e.preventDefault();
-      setPersistentHighlight(prev => {
+      setPersistentHighlight((prev) => {
         if (prev) {
           toast.info("Highlight removed");
           return null;
