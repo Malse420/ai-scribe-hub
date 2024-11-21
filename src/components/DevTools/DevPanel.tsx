@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Code, Database, Terminal, FileCode, Crosshair } from "lucide-react";
+import { Code, Database, Terminal, FileCode, Crosshair, Eye } from "lucide-react";
 import ScriptEditor from "./ScriptEditor";
-import { VisualSelector } from "./VisualSelector";
+import { ElementSelector } from "./ElementSelector/ElementSelector";
 import { SourceViewer } from "./SourceViewer/SourceViewer";
 import { CodeTab } from "./Tabs/CodeTab";
 import { ScrapingTab } from "./Tabs/ScrapingTab";
@@ -26,7 +26,7 @@ const DevPanel = () => {
   const tabs = [
     { id: "code", label: "Code", icon: Code },
     { id: "scripts", label: "Scripts", icon: FileCode },
-    { id: "selector", label: "Selector", icon: Crosshair },
+    { id: "selector", label: "Element Selector", icon: Eye },
     { id: "scraping", label: "Scraping", icon: Database },
     { id: "console", label: "Console", icon: Terminal },
     { id: "source", label: "Source", icon: FileCode },
@@ -53,12 +53,7 @@ const DevPanel = () => {
       <div className="p-4">
         {activeTab === "code" && <CodeTab />}
         {activeTab === "scripts" && <ScriptEditor />}
-        {activeTab === "selector" && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Visual Selector Tool</h2>
-            <VisualSelector />
-          </div>
-        )}
+        {activeTab === "selector" && <ElementSelector />}
         {activeTab === "scraping" && <ScrapingTab />}
         {activeTab === "console" && <ConsoleTab />}
         {activeTab === "source" && (
