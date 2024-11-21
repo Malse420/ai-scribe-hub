@@ -1,4 +1,4 @@
-/// <reference types="chrome"/>
+/// <reference types="chrome" />
 
 // Listen for DOM mutations to handle dynamic content
 const observer = new MutationObserver((mutations) => {

@@ -1,4 +1,4 @@
-/// <reference types="chrome"/>
+/// <reference types="chrome" />
 import { supabase } from "./lib/supabase";
 
 // Listen for messages from content script
@@ -26,7 +26,7 @@ async function executeUserScript(scriptId: string, tabId?: number) {
     // Execute the script in the context of the web page
     await chrome.scripting.executeScript({
       target: { tabId },
-      func: (scriptContent) => {
+      func: (scriptContent: string) => {
         try {
           new Function(scriptContent)();
         } catch (err) {
