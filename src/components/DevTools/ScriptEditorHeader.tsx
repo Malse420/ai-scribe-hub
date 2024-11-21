@@ -12,7 +12,7 @@ interface ScriptEditorHeaderProps {
   newCollaboratorEmail: string;
   setNewCollaboratorEmail: (email: string) => void;
   handleAddCollaborator: () => void;
-  removeCollaborator: (id: string) => void;
+  removeCollaborator: (id: string) => Promise<void> | void;
   setShowHistory: (show: boolean) => void;
   showHistory: boolean;
   updatePermissions: UseMutationResult<any, Error, { read: string[]; write: string[]; admin: string[] }>;

@@ -102,6 +102,10 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
     automaticLayout: true,
   };
 
+  const handleRemoveCollaborator = async (id: string) => {
+    await removeCollaborator.mutateAsync(id);
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <Card className="lg:col-span-2">
@@ -110,7 +114,7 @@ const ScriptEditor = ({ initialScript, onSave, onDelete }: ScriptEditorProps) =>
           newCollaboratorEmail={newCollaboratorEmail}
           setNewCollaboratorEmail={setNewCollaboratorEmail}
           handleAddCollaborator={addCollaborator}
-          removeCollaborator={(id: string) => removeCollaborator.mutate(id)}
+          removeCollaborator={handleRemoveCollaborator}
           setShowHistory={setShowHistory}
           showHistory={showHistory}
           updatePermissions={updatePermissions}
