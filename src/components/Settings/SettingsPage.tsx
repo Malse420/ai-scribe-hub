@@ -1,5 +1,6 @@
 import ApiKeySettings from "./ApiKeySettings";
 import StorageSettings from "./StorageSettings";
+import AIAssistantSettings from "./AIAssistantSettings";
 
 const SettingsPage = () => {
   return (
@@ -11,6 +12,7 @@ const SettingsPage = () => {
         </p>
       </div>
 
+      <AIAssistantSettings />
       <StorageSettings />
       <ApiKeySettings />
 

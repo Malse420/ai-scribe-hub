@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { getApiKey } from "./apiKeys";
 import { extractPageSource } from "./sourceExtractor";
+import { getAIAssistantSettings } from "./aiAssistantSettings";
 
 interface AIModelResponse {
   result: string;
@@ -17,25 +18,34 @@ export const generateWithAI = async (
     throw new Error('Hugging Face API key is required');
   }
 
-  // Extract page source and context
+  const settings = getAIAssistantSettings();
   const pageContext = extractPageSource();
-  const contextPrompt = `
-Current webpage context:
+
+  let contextPrompt = `${settings.systemPrompt}\n\n`;
+
+  if (settings.includePageMetadata) {
+    contextPrompt += `Current webpage context:
 URL: ${pageContext.url}
-Title: ${pageContext.title}
+Title: ${pageContext.title}\n\n`;
+  }
 
-HTML Structure:
-${pageContext.html}
+  if (settings.includeHtmlSource) {
+    contextPrompt += `HTML Structure:
+${pageContext.html}\n\n`;
+  }
 
-Active Scripts:
-${pageContext.javascript}
+  if (settings.includeInlineScripts) {
+    contextPrompt += `Active Scripts:
+${pageContext.javascript}\n\n`;
+  }
 
-External Scripts:
-${pageContext.externalScripts.join('\n')}
+  if (settings.includeExternalScripts) {
+    contextPrompt += `External Scripts:
+${pageContext.externalScripts.join('\n')}\n\n`;
+  }
 
-User Query:
-${prompt}
-`;
+  contextPrompt += `User Query:
+${prompt}`;
 
   const { data, error } = await supabase.functions.invoke('ai-model-handler', {
     body: { 
