@@ -374,6 +374,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_preferences: {
+        Row: {
+          created_at: string | null
+          id: string
+          language: string
+          regional_settings: Json | null
+          theme: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          language?: string
+          regional_settings?: Json | null
+          theme?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          language?: string
+          regional_settings?: Json | null
+          theme?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       userscripts: {
         Row: {
           audit_log: Json | null

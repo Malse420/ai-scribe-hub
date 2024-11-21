@@ -1,139 +1,131 @@
-import { useState, useCallback, useEffect } from "react";
-import { Eye, Target, Save, List } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
-import { useAIAssistant } from "@/contexts/AIAssistantContext";
-
-interface SelectedElement {
-  selector: string;
-  element: HTMLElement;
-  label?: string;
-}
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export const ElementSelector = () => {
-  const [isSelecting, setIsSelecting] = useState(false);
-  const [selectedElements, setSelectedElements] = useState<SelectedElement[]>([]);
-  const [selectorHistory, setSelectorHistory] = useState<SelectedElement[]>([]);
-  const { processQuery } = useAIAssistant();
-
-  const handleElementSelect = useCallback(async (element: HTMLElement) => {
-    try {
-      const selector = await processQuery(
-        `Generate a precise CSS selector for this element: ${element.outerHTML}`
-      );
-
-      const newElement = { selector, element };
-      setSelectedElements((prev) => [...prev, newElement]);
-      toast.success("Element selected");
-    } catch (error) {
-      toast.error("Failed to generate selector");
-      console.error(error);
-    }
-  }, [processQuery]);
-
-  const saveSelector = async (element: SelectedElement) => {
-    try {
-      const { error } = await supabase.from("element_selectors").insert({
-        selector: element.selector,
-        element_type: element.element.tagName.toLowerCase(),
-        description: element.label,
-      });
-
-      if (error) throw error;
-      setSelectorHistory((prev) => [...prev, element]);
-      toast.success("Selector saved");
-    } catch (error) {
-      toast.error("Failed to save selector");
-      console.error(error);
-    }
-  };
+  const [selectedElement, setSelectedElement] = useState<Element | null>(null);
+  const [selector, setSelector] = useState("");
+  const [description, setDescription] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (!isSelecting) return;
-
     const handleMouseOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      target.style.outline = "2px solid #8B5CF6";
+      e.preventDefault();
+      const target = e.target as Element;
+      target.classList.add('ai-scribe-highlight');
     };
 
     const handleMouseOut = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      target.style.outline = "";
+      e.preventDefault();
+      const target = e.target as Element;
+      target.classList.remove('ai-scribe-highlight');
     };
 
     const handleClick = (e: MouseEvent) => {
       e.preventDefault();
-      const target = e.target as HTMLElement;
-      handleElementSelect(target);
+      const target = e.target as Element;
+      setSelectedElement(target);
+      const generatedSelector = generateSelector(target);
+      setSelector(generatedSelector);
     };
 
-    document.addEventListener("mouseover", handleMouseOver);
-    document.addEventListener("mouseout", handleMouseOut);
-    document.addEventListener("click", handleClick, true);
+    document.addEventListener('mouseover', handleMouseOver);
+    document.addEventListener('mouseout', handleMouseOut);
+    document.addEventListener('click', handleClick);
 
     return () => {
-      document.removeEventListener("mouseover", handleMouseOver);
-      document.removeEventListener("mouseout", handleMouseOut);
-      document.removeEventListener("click", handleClick, true);
+      document.removeEventListener('mouseover', handleMouseOver);
+      document.removeEventListener('mouseout', handleMouseOut);
+      document.removeEventListener('click', handleClick);
     };
-  }, [isSelecting, handleElementSelect]);
+  }, []);
+
+  const generateSelector = (element: Element): string => {
+    // Generate a unique selector for the element
+    const id = element.id;
+    if (id) return `#${id}`;
+
+    const classes = Array.from(element.classList).join('.');
+    if (classes) return `.${classes}`;
+
+    let selector = element.tagName.toLowerCase();
+    const parent = element.parentElement;
+    if (parent) {
+      const siblings = Array.from(parent.children);
+      const index = siblings.indexOf(element);
+      selector += `:nth-child(${index + 1})`;
+    }
+
+    return selector;
+  };
+
+  const saveSelector = async () => {
+    try {
+      const { error } = await supabase
+        .from('element_selectors')
+        .insert([
+          {
+            selector,
+            element_type: selectedElement?.tagName.toLowerCase() || 'unknown',
+            description,
+            metadata: {
+              innerHTML: selectedElement?.innerHTML,
+              outerHTML: selectedElement?.outerHTML,
+            }
+          }
+        ]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Selector saved successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save selector",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
-    <Card className="p-4 space-y-4">
-      <div className="flex items-center gap-2">
-        <Button
-          onClick={() => setIsSelecting(!isSelecting)}
-          variant={isSelecting ? "destructive" : "default"}
-        >
-          {isSelecting ? (
-            <>
-              <Target className="w-4 h-4 mr-2" />
-              Stop Selecting
-            </>
-          ) : (
-            <>
-              <Eye className="w-4 h-4 mr-2" />
-              Start Selecting
-            </>
-          )}
-        </Button>
-        <Button variant="outline" onClick={() => setSelectedElements([])}>
-          Clear Selection
-        </Button>
-      </div>
-
-      <ScrollArea className="h-[200px] border rounded-md p-4">
+    <Card>
+      <CardContent className="space-y-4 p-4">
         <div className="space-y-2">
-          {selectedElements.map((el, index) => (
-            <div key={index} className="flex items-center justify-between">
-              <code className="text-sm">{el.selector}</code>
-              <Button size="sm" onClick={() => saveSelector(el)}>
-                <Save className="w-4 h-4" />
-              </Button>
-            </div>
-          ))}
+          <Label>Current Selector</Label>
+          <Input value={selector} onChange={(e) => setSelector(e.target.value)} />
         </div>
-      </ScrollArea>
 
-      <div className="border-t pt-4">
-        <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-          <List className="w-4 h-4" />
-          Selector History
-        </h3>
-        <ScrollArea className="h-[150px]">
+        <div className="space-y-2">
+          <Label>Description</Label>
+          <Input 
+            value={description} 
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Describe this selector's purpose..."
+          />
+        </div>
+
+        {selectedElement && (
           <div className="space-y-2">
-            {selectorHistory.map((el, index) => (
-              <div key={index} className="text-sm">
-                <code>{el.selector}</code>
-                {el.label && <span className="ml-2 text-muted-foreground">({el.label})</span>}
-              </div>
-            ))}
+            <Label>Selected Element Preview</Label>
+            <Card className="p-2 bg-secondary/10">
+              <pre className="text-sm overflow-x-auto">
+                {selectedElement.outerHTML}
+              </pre>
+            </Card>
           </div>
-        </ScrollArea>
-      </div>
+        )}
+
+        <Button onClick={saveSelector} disabled={!selector}>
+          Save Selector
+        </Button>
+      </CardContent>
     </Card>
   );
 };
