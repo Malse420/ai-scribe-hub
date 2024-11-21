@@ -19,26 +19,24 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AIAssistantProvider>
       <TooltipProvider>
+        <div className="min-h-screen bg-background">
+          <Sidebar />
+          <div className="ml-64">
+            <Header />
+            <main className="pt-16 px-6">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/chat" element={<ChatInterface />} />
+                <Route path="/devtools" element={<DevPanel />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/workflows" element={<WorkflowList />} />
+                <Route path="/analytics" element={<AnalyticsDashboard />} />
+              </Routes>
+            </main>
+          </div>
+        </div>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <div className="min-h-screen">
-            <Sidebar />
-            <div className="ml-64">
-              <Header />
-              <main className="pt-16">
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/chat" element={<ChatInterface />} />
-                  <Route path="/devtools" element={<DevPanel />} />
-                  <Route path="/settings" element={<SettingsPage />} />
-                  <Route path="/workflows" element={<WorkflowList />} />
-                  <Route path="/analytics" element={<AnalyticsDashboard />} />
-                </Routes>
-              </main>
-            </div>
-          </div>
-        </BrowserRouter>
       </TooltipProvider>
     </AIAssistantProvider>
   </QueryClientProvider>
