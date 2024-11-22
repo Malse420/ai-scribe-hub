@@ -9,7 +9,6 @@ dev: install
 
 clean:
 	rm -rf dist
-	rm -f dist.zip
 
 install:
 	npm install

@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import archiver from 'archiver';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -46,33 +45,4 @@ filesToCopy.forEach(file => {
   }
 });
 
-// Create a zip file
-const output = fs.createWriteStream(path.join(__dirname, '../dist.zip'));
-const archive = archiver('zip', {
-  zlib: { level: 9 }
-});
-
-output.on('close', () => {
-  console.log('Extension package created successfully!');
-  console.log(`Total bytes: ${archive.pointer()}`);
-});
-
-archive.on('error', (err) => {
-  throw err;
-});
-
-archive.on('warning', (err) => {
-  if (err.code === 'ENOENT') {
-    console.warn('Warning:', err);
-  } else {
-    throw err;
-  }
-});
-
-archive.pipe(output);
-
-// Add the entire dist directory to the zip
-archive.directory(distDir, false);
-
-// Finalize the archive
-archive.finalize();
+console.log('Extension build completed successfully!');
