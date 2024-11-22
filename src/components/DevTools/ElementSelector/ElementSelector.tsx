@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { SelectorType, generateXPathSelector } from "@/utils/selectorUtils";
 import { ElementHighlighter } from "../VisualSelector/ElementHighlighter";
+import { useUser } from "@supabase/auth-helpers-react";
 
 interface SelectedElement {
   element: Element;
@@ -24,6 +25,7 @@ export const ElementSelector = () => {
   const [selectionHistory, setSelectionHistory] = useState<SelectedElement[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const { toast } = useToast();
+  const user = useUser();
 
   const handleElementSelect = (element: HTMLElement) => {
     const newSelector = selectorType === "css" 
@@ -83,27 +85,37 @@ export const ElementSelector = () => {
   };
 
   const saveSelector = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to save selectors",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('element_selectors')
-        .insert([{
+        .insert({
           selector,
           element_type: selectedElements[0]?.element.tagName.toLowerCase() || 'unknown',
           description,
-          selector_type: selectorType,
-          is_group: selectedElements.length > 1,
-          group_elements: selectedElements.length > 1 
-            ? selectedElements.map(el => ({
-                selector: el.selector,
-                type: el.type,
-                tagName: el.element.tagName.toLowerCase()
-              }))
-            : null,
-          selection_history: selectionHistory.map(el => ({
-            selector: el.selector,
-            type: el.type
-          }))
-        }]);
+          user_id: user.id,
+          metadata: {
+            selector_type: selectorType,
+            is_group: selectedElements.length > 1,
+            group_elements: selectedElements.map(el => ({
+              selector: el.selector,
+              type: el.type,
+              tagName: el.element.tagName.toLowerCase()
+            })),
+            selection_history: selectionHistory.map(el => ({
+              selector: el.selector,
+              type: el.type
+            }))
+          }
+        });
 
       if (error) throw error;
 
