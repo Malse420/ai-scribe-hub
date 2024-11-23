@@ -2,6 +2,7 @@
 
 import { sidebarStyles } from "./styles/sidebarStyles";
 import { sidebarTemplate } from "./templates/sidebarTemplate";
+import { DOMObserver, DOMChangeEvent } from "./utils/domObserver";
 
 // Create and inject the sidebar
 const createSidebar = () => {
@@ -21,7 +22,8 @@ const createSidebar = () => {
     const action = target.closest('[data-action]')?.getAttribute('data-action');
     
     if (action) {
-      chrome.runtime.sendMessage({ type: 'NAVIGATE', action });
+      chrome.runtime.sendMessage({ type: 'NAVIGATE', action })
+        .catch(error => console.error('Navigation error:', error));
     }
   });
 
@@ -45,25 +47,21 @@ if (document.readyState === 'loading') {
   createSidebar();
 }
 
-// DOM Observer for page changes
-const observer = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    if (mutation.type === "childList") {
-      analyzeDOMChanges(mutation.target as Element);
-    }
-  });
+// Initialize DOM observer with throttled callback
+const domObserver = new DOMObserver((event: DOMChangeEvent) => {
+  // Log significant DOM changes
+  if (event.type === 'childList' && (event.addedNodes?.length || event.removedNodes?.length)) {
+    console.debug('DOM structure changed:', {
+      timestamp: event.timestamp,
+      target: event.target,
+      addedNodes: event.addedNodes?.length || 0,
+      removedNodes: event.removedNodes?.length || 0
+    });
+  }
 });
 
-observer.observe(document.body, {
-  childList: true,
-  subtree: true
-});
-
-// Analyze DOM changes and send relevant data to the extension
-function analyzeDOMChanges(element: Element) {
-  // Implementation will be added based on specific requirements
-  console.log("DOM changed:", element);
-}
+// Start observing
+domObserver.observe();
 
 // Listen for messages from the extension
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
